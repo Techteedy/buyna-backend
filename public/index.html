@@ -3,99 +3,205 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BUYNA</title>
+<title>BUYNA — your business, for Pidgin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --paper: #F6F1E4;
+    --card: #FFFFF9;
+    --ink: #232120;
+    --ink-soft: #7A7264;
+    --ink-faint: #B7AE9C;
+    --stamp-blue: #2B3A67;
+    --stamp-blue-soft: #E7EAF2;
+    --stamp-green: #1F7A4D;
+    --stamp-green-soft: #E5F2EB;
+    --stamp-red: #B23B2E;
+    --stamp-red-soft: #FAEAE6;
+    --stamp-gold: #B5780C;
+    --stamp-gold-soft: #F8EFDC;
+    --rule: #E6DFCC;
+  }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: -apple-system, system-ui, sans-serif;
-    background: #f5f6f8;
-    color: #222;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
+  .mono { font-family: 'Space Mono', monospace; }
+  .display { font-family: 'Fraunces', serif; }
+
   .header {
-    background: #1a6bc4;
-    color: white;
-    padding: 18px 16px;
+    padding: 28px 20px 20px;
     text-align: center;
+    border-bottom: 1px solid var(--rule);
   }
-  .header .title { font-size: 24px; font-weight: 800; }
-  .header .subtitle { font-size: 12px; opacity: 0.9; margin-top: 2px; }
-  .container { max-width: 480px; margin: 0 auto; padding: 16px; padding-bottom: 60px; }
+  .wordmark {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 30px;
+    letter-spacing: -0.01em;
+  }
+  .eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
 
-  .phone-bar {
-    display: flex; gap: 8px; margin-bottom: 16px;
+  .container { max-width: 460px; margin: 0 auto; padding: 18px 16px 70px; }
+
+  /* Trader identity ticket */
+  .ticket {
+    background: var(--card);
+    border: 1px dashed var(--ink-faint);
+    border-radius: 4px;
+    padding: 12px 14px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
-  .phone-bar input {
-    flex: 1; padding: 10px 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 14px;
+  .ticket .ticket-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    white-space: nowrap;
   }
-  .phone-bar button {
-    background: #1a6bc4; color: white; border: none; border-radius: 10px; padding: 10px 16px; font-size: 14px; cursor: pointer;
+  .ticket input {
+    flex: 1; border: none; background: none; font-family: 'Space Mono', monospace;
+    font-size: 14px; color: var(--ink); outline: none; min-width: 0;
+  }
+  .ticket button {
+    background: var(--stamp-blue); color: white; border: none; border-radius: 3px;
+    padding: 7px 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;
+    font-size: 12px; cursor: pointer; white-space: nowrap;
   }
 
-  .mic-section { text-align: center; margin: 20px 0 28px; }
+  /* Voice section */
+  .mic-section { text-align: center; margin: 8px 0 26px; }
   .mic-button {
-    width: 110px; height: 110px; border-radius: 50%; background: #1a6bc4; border: none;
-    color: white; font-size: 36px; cursor: pointer; box-shadow: 0 4px 14px rgba(26,107,196,0.35);
+    width: 96px; height: 96px; border-radius: 50%; background: var(--stamp-blue); border: none;
+    color: white; font-size: 32px; cursor: pointer;
+    box-shadow: 0 0 0 6px var(--stamp-blue-soft);
+    transition: transform 0.15s;
   }
-  .mic-button.listening { background: #d85a30; animation: pulse 1.2s infinite; }
+  .mic-button:active { transform: scale(0.96); }
+  .mic-button.listening { background: var(--stamp-red); box-shadow: 0 0 0 6px var(--stamp-red-soft); animation: pulse 1.3s infinite; }
   @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(216,90,48,0.5); }
-    70% { box-shadow: 0 0 0 22px rgba(216,90,48,0); }
-    100% { box-shadow: 0 0 0 0 rgba(216,90,48,0); }
+    0% { box-shadow: 0 0 0 6px var(--stamp-red-soft); }
+    70% { box-shadow: 0 0 0 16px transparent; }
+    100% { box-shadow: 0 0 0 6px var(--stamp-red-soft); }
   }
-  .mic-label { margin-top: 10px; font-size: 13px; color: #888; font-weight: 600; }
-  .voice-log { margin-top: 14px; }
-  .voice-card {
-    background: white; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; font-size: 14px;
+  .mic-label {
+    margin-top: 12px; font-family: 'Space Mono', monospace; font-size: 12px;
+    font-style: italic; color: var(--ink-soft);
   }
-  .voice-card.reply { background: #e6f1fb; }
-  .voice-label { font-size: 10px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
 
-  .card {
-    background: white; border-radius: 14px; padding: 16px; margin-bottom: 14px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  .voice-log { margin-top: 16px; text-align: left; }
+  .bubble {
+    border-radius: 10px; padding: 10px 13px; margin-bottom: 7px; font-size: 13.5px; line-height: 1.4;
+    max-width: 92%;
   }
-  .card-title { font-size: 13px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 10px; }
-  .stat-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 15px; }
-  .stat-row .label { color: #777; }
-  .stat-row .value { font-weight: 700; }
-  .stat-row .value.profit { color: #1d9e75; }
+  .bubble.you { background: #EDEAE0; color: var(--ink-soft); margin-right: auto; }
+  .bubble.buyna { background: var(--stamp-blue-soft); color: var(--ink); margin-left: auto; }
+  .bubble-label {
+    font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-faint); margin-bottom: 3px;
+  }
 
-  .list-item {
-    display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px;
+  /* Receipt cards — the signature element */
+  .receipt-shadow {
+    margin-bottom: 18px;
+    filter: drop-shadow(0 2px 5px rgba(35,33,32,0.10));
   }
-  .list-item:last-child { border-bottom: none; }
-  .badge {
-    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-left: 6px;
+  .receipt-card {
+    background: var(--card);
+    padding: 18px 18px 16px;
+    clip-path: polygon(
+      0% 9px, 3.8% 0%, 7.6% 9px, 11.4% 0%, 15.2% 9px, 19% 0%, 22.8% 9px, 26.6% 0%,
+      30.4% 9px, 34.2% 0%, 38% 9px, 41.8% 0%, 45.6% 9px, 49.4% 0%, 53.2% 9px, 57% 0%,
+      60.8% 9px, 64.6% 0%, 68.4% 9px, 72.2% 0%, 76% 9px, 79.8% 0%, 83.6% 9px, 87.4% 0%,
+      91.2% 9px, 95% 0%, 98.8% 9px, 100% 6px, 100% 100%, 0% 100%
+    );
+    padding-top: 22px;
   }
-  .badge.low { background: #fcebeb; color: #a32d2d; }
-  .badge.apprentice { background: #faeeda; color: #854f0b; }
-  .empty-state { color: #999; font-size: 13px; text-align: center; padding: 10px 0; }
+  .receipt-card.warning { background: var(--stamp-red-soft); }
+  .receipt-card.highlight { background: var(--stamp-blue-soft); }
 
-  .progress-bar-bg { background: #eee; border-radius: 8px; height: 8px; margin-top: 4px; overflow: hidden; }
-  .progress-bar-fill { background: #1d9e75; height: 100%; }
+  .card-eyebrow {
+    font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-soft); margin-bottom: 10px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .ledger-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 5px 0; font-size: 14.5px; border-bottom: 1px dotted var(--rule);
+  }
+  .ledger-row:last-child { border-bottom: none; }
+  .ledger-row .label { color: var(--ink-soft); }
+  .ledger-row .value { font-family: 'Space Mono', monospace; font-weight: 700; }
+  .ledger-row .value.green { color: var(--stamp-green); }
+  .ledger-row .value.red { color: var(--stamp-red); }
+
+  .stamp {
+    display: inline-block; font-family: 'Space Mono', monospace; font-size: 9.5px;
+    letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700;
+    border: 1.5px solid currentColor; border-radius: 4px; padding: 1px 6px;
+    transform: rotate(-3deg); margin-left: 6px;
+  }
+  .stamp.low { color: var(--stamp-red); }
+  .stamp.apprentice { color: var(--stamp-gold); }
+
+  .empty-state {
+    color: var(--ink-faint); font-size: 13px; font-style: italic; padding: 6px 0;
+  }
+
+  .progress-track { background: var(--rule); border-radius: 6px; height: 6px; margin-top: 6px; overflow: hidden; }
+  .progress-fill { background: var(--stamp-green); height: 100%; }
+
+  .task-card {
+    background: var(--stamp-gold-soft);
+  }
+  .task-card .card-eyebrow { color: var(--stamp-gold); }
+
+  .footer-line {
+    text-align: center; font-family: 'Space Mono', monospace; font-style: italic;
+    font-size: 11px; color: var(--ink-faint); margin-top: 28px; letter-spacing: 0.05em;
+  }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="title">BUYNA</div>
-  <div class="subtitle">Your business, for Pidgin</div>
+  <div class="wordmark">BUYNA</div>
+  <div class="eyebrow">Pidgin-first business ledger</div>
 </div>
 
 <div class="container">
-  <div class="phone-bar">
-    <input type="text" id="phoneInput" placeholder="Enter your phone number">
-    <button id="usePhoneBtn">Use</button>
+  <div class="ticket">
+    <span class="ticket-label">Trading as</span>
+    <input type="text" id="phoneInput" placeholder="phone number">
+    <button id="usePhoneBtn">Switch</button>
   </div>
 
   <div class="mic-section">
     <button class="mic-button" id="micBtn">&#127908;</button>
-    <div class="mic-label" id="micLabel">Tap to talk</div>
+    <div class="mic-label" id="micLabel">tap to talk</div>
     <div class="voice-log" id="voiceLog"></div>
   </div>
 
   <div id="dashboard"></div>
+
+  <div class="footer-line">— end of report —</div>
 </div>
 
 <script>
@@ -106,17 +212,9 @@ const micLabel = document.getElementById('micLabel');
 const voiceLog = document.getElementById('voiceLog');
 const dashboardEl = document.getElementById('dashboard');
 
-function getPhone() {
-  return localStorage.getItem('buyna_phone') || '';
-}
-function setPhone(p) {
-  localStorage.setItem('buyna_phone', p);
-  phoneInput.value = p;
-}
-
-function formatNaira(n) {
-  return '₦' + Number(n || 0).toLocaleString('en-NG');
-}
+function getPhone() { return localStorage.getItem('buyna_phone') || ''; }
+function setPhone(p) { localStorage.setItem('buyna_phone', p); phoneInput.value = p; }
+function formatNaira(n) { return '₦' + Number(n || 0).toLocaleString('en-NG'); }
 function timeAgo(iso) {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
@@ -127,10 +225,17 @@ function timeAgo(iso) {
   return Math.floor(hrs / 24) + 'd ago';
 }
 
+function card(eyebrow, innerHtml, cls) {
+  return `<div class="receipt-shadow"><div class="receipt-card${cls ? ' ' + cls : ''}">
+    <div class="card-eyebrow"><span>${eyebrow}</span></div>
+    ${innerHtml}
+  </div></div>`;
+}
+
 async function loadDashboard() {
   const phone = getPhone();
   if (!phone) {
-    dashboardEl.innerHTML = '<div class="empty-state">Enter your phone number above to see your dashboard.</div>';
+    dashboardEl.innerHTML = '<div class="empty-state">Enter your phone number above to open your ledger.</div>';
     return;
   }
   try {
@@ -138,87 +243,88 @@ async function loadDashboard() {
     const d = await res.json();
     renderDashboard(d);
   } catch (err) {
-    dashboardEl.innerHTML = '<div class="empty-state">Could not load dashboard. Check your connection.</div>';
+    dashboardEl.innerHTML = '<div class="empty-state">Could not load your ledger. Check your connection.</div>';
   }
 }
 
 function renderDashboard(d) {
   let html = '';
 
-  html += `<div class="card">
-    <div class="card-title">Today</div>
-    <div class="stat-row"><span class="label">Sales recorded</span><span class="value">${d.today.count}</span></div>
-    <div class="stat-row"><span class="label">Total</span><span class="value">${formatNaira(d.today.total)}</span></div>
-    <div class="stat-row"><span class="label">Profit</span><span class="value profit">${formatNaira(d.today.profit)}</span></div>
-  </div>`;
-
-  html += `<div class="card">
-    <div class="card-title">Last 7 days</div>
-    <div class="stat-row"><span class="label">Total</span><span class="value">${formatNaira(d.week.total)}</span></div>
-    <div class="stat-row"><span class="label">Profit</span><span class="value profit">${formatNaira(d.week.profit)}</span></div>
-  </div>`;
-
-  html += `<div class="card"><div class="card-title">Stock</div>`;
-  if (!d.stock.length) {
-    html += `<div class="empty-state">No stock recorded yet.</div>`;
-  } else {
-    d.stock.forEach(s => {
-      html += `<div class="list-item"><span>${s.item}${s.isLow ? '<span class="badge low">low</span>' : ''}</span><span>${s.quantity}</span></div>`;
-    });
+  if (d.todayTask) {
+    html += card(`Day ${d.todayTask.day} of 90 — today's task`,
+      `<div style="font-size:14px;line-height:1.5">${d.todayTask.task}</div>`, 'task-card');
   }
-  html += `</div>`;
 
-  html += `<div class="card"><div class="card-title">Customers who owe you</div>`;
-  if (!d.debts.length) {
-    html += `<div class="empty-state">Nobody owes you right now.</div>`;
-  } else {
-    d.debts.forEach(deb => {
-      html += `<div class="list-item"><span>${deb.customerName}</span><span>${formatNaira(deb.amount)}</span></div>`;
-    });
+  if (d.capitalStatus) {
+    const cs = d.capitalStatus;
+    let rows = `
+      <div class="ledger-row"><span class="label">Capital</span><span class="value">${formatNaira(cs.capital)}</span></div>
+      <div class="ledger-row"><span class="label">Spent so far</span><span class="value red">${formatNaira(cs.spent)}</span></div>
+      <div class="ledger-row"><span class="label">Remaining</span><span class="value">${formatNaira(cs.remaining)}</span></div>`;
+    if (cs.daysLeft !== null) {
+      rows += `<div class="ledger-row"><span class="label">${cs.warning ? '⚠ ' : ''}Days left at this rate</span><span class="value${cs.warning ? ' red' : ''}">${cs.daysLeft}</span></div>`;
+    }
+    html += card('Capital status', rows, cs.warning ? 'warning' : '');
   }
-  html += `</div>`;
 
-  html += `<div class="card"><div class="card-title">Kolo savings</div>`;
-  if (!d.kolo.length) {
-    html += `<div class="empty-state">No Kolo savings yet — say "I save 1000" to start.</div>`;
-  } else {
-    d.kolo.forEach(k => {
-      const pct = k.targetAmount > 0 ? Math.min(100, Math.round((k.savedAmount / k.targetAmount) * 100)) : null;
-      html += `<div style="margin-bottom:10px">
-        <div class="list-item" style="border-bottom:none"><span>${k.goalName}</span><span>${formatNaira(k.savedAmount)}${k.targetAmount > 0 ? ' / ' + formatNaira(k.targetAmount) : ''}</span></div>
-        ${pct !== null ? `<div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>` : ''}
-      </div>`;
-    });
+  html += card('Today', `
+    <div class="ledger-row"><span class="label">Sales rung up</span><span class="value">${d.today.count}</span></div>
+    <div class="ledger-row"><span class="label">Total</span><span class="value">${formatNaira(d.today.total)}</span></div>
+    <div class="ledger-row"><span class="label">Profit</span><span class="value green">${formatNaira(d.today.profit)}</span></div>
+    <div class="ledger-row"><span class="label">Expenses</span><span class="value red">${formatNaira(d.today.expenses)}</span></div>
+  `, 'highlight');
+
+  html += card('Last 7 days', `
+    <div class="ledger-row"><span class="label">Total</span><span class="value">${formatNaira(d.week.total)}</span></div>
+    <div class="ledger-row"><span class="label">Profit</span><span class="value green">${formatNaira(d.week.profit)}</span></div>
+    <div class="ledger-row"><span class="label">Expenses</span><span class="value red">${formatNaira(d.week.expenses)}</span></div>
+  `);
+
+  let stockRows = !d.stock.length
+    ? `<div class="empty-state">No stock rung up yet.</div>`
+    : d.stock.map(s => `<div class="ledger-row"><span class="label">${s.item}${s.isLow ? '<span class="stamp low">low</span>' : ''}</span><span class="value">${s.quantity}${s.unitCost > 0 ? ' <span style="color:var(--ink-faint);font-weight:400">@ ' + formatNaira(s.unitCost) + '</span>' : ''}</span></div>`).join('');
+  html += card('Stock on hand', stockRows);
+
+  let debtRows = !d.debts.length
+    ? `<div class="empty-state">Nobody owes you right now.</div>`
+    : d.debts.map(deb => `<div class="ledger-row"><span class="label">${deb.customerName}</span><span class="value red">${formatNaira(deb.amount)}</span></div>`).join('');
+  html += card('Customers who owe you', debtRows);
+
+  let koloRows = !d.kolo.length
+    ? `<div class="empty-state">No Kolo savings yet — say "I save 1000" to start.</div>`
+    : d.kolo.map(k => {
+        const pct = k.targetAmount > 0 ? Math.min(100, Math.round((k.savedAmount / k.targetAmount) * 100)) : null;
+        return `<div style="margin-bottom:8px">
+          <div class="ledger-row" style="border-bottom:none"><span class="label">${k.goalName}</span><span class="value">${formatNaira(k.savedAmount)}${k.targetAmount > 0 ? ' / ' + formatNaira(k.targetAmount) : ''}</span></div>
+          ${pct !== null ? `<div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>` : ''}
+        </div>`;
+      }).join('');
+  html += card('Kolo savings', koloRows);
+
+  if (d.recipes.length) {
+    const rows = d.recipes.map(r => `<div class="ledger-row"><span class="label">${r.name}</span><span class="value">${formatNaira(r.costPerItem)} <span style="color:var(--ink-faint);font-weight:400">/ item</span></span></div>`).join('');
+    html += card('Recipe costs', rows);
   }
-  html += `</div>`;
 
   if (d.apprentices.length) {
-    html += `<div class="card"><div class="card-title">Apprentices</div>`;
-    d.apprentices.forEach(a => {
-      html += `<div class="list-item"><span>${a.name}</span><span>${a.phone}</span></div>`;
-    });
-    html += `</div>`;
+    const rows = d.apprentices.map(a => `<div class="ledger-row"><span class="label">${a.name}<span class="stamp apprentice">apprentice</span></span><span class="value" style="font-size:12px;color:var(--ink-soft)">${a.phone}</span></div>`).join('');
+    html += card('Apprentices', rows);
   }
 
-  html += `<div class="card"><div class="card-title">Notifications</div>`;
-  if (!d.notifications.length) {
-    html += `<div class="empty-state">No notifications.</div>`;
-  } else {
-    d.notifications.forEach(n => {
-      html += `<div class="list-item"><span>${n.message}</span><span style="color:#999;font-size:12px">${timeAgo(n.createdAt)}</span></div>`;
-    });
-  }
-  html += `</div>`;
+  let notifRows = !d.notifications.length
+    ? `<div class="empty-state">No notifications.</div>`
+    : d.notifications.map(n => `<div class="ledger-row"><span class="label" style="font-size:13px">${n.message}</span><span class="value" style="font-size:11px;font-weight:400;color:var(--ink-faint)">${timeAgo(n.createdAt)}</span></div>`).join('');
+  html += card('Notifications', notifRows);
 
-  html += `<div class="card"><div class="card-title">Recent sales</div>`;
-  if (!d.recentSales.length) {
-    html += `<div class="empty-state">No sales recorded yet.</div>`;
-  } else {
-    d.recentSales.forEach(s => {
-      html += `<div class="list-item"><span>${s.item}${s.recordedBy === 'apprentice' ? '<span class="badge apprentice">apprentice</span>' : ''}</span><span>${formatNaira(s.amount)}</span></div>`;
-    });
-  }
-  html += `</div>`;
+  let salesRows = !d.recentSales.length
+    ? `<div class="empty-state">No sales rung up yet.</div>`
+    : d.recentSales.map(s => `<div class="ledger-row"><span class="label">${s.item}${s.recordedBy === 'apprentice' ? '<span class="stamp apprentice">apprentice</span>' : ''}</span><span class="value">${formatNaira(s.amount)}</span></div>`).join('');
+  html += card('Recent sales', salesRows);
+
+  let expenseRows = !d.recentExpenses.length
+    ? `<div class="empty-state">No expenses rung up yet.</div>`
+    : d.recentExpenses.map(e => `<div class="ledger-row"><span class="label">${e.category}</span><span class="value red">${formatNaira(e.amount)}</span></div>`).join('');
+  html += card('Recent expenses', expenseRows);
 
   dashboardEl.innerHTML = html;
 }
@@ -234,8 +340,8 @@ let listening = false;
 
 function renderVoiceCard(label, text, cls) {
   const div = document.createElement('div');
-  div.className = 'voice-card' + (cls ? ' ' + cls : '');
-  div.innerHTML = `<div class="voice-label">${label}</div><div></div>`;
+  div.className = 'bubble ' + (cls || 'you');
+  div.innerHTML = `<div class="bubble-label">${label}</div><div></div>`;
   div.querySelector('div:last-child').textContent = text;
   voiceLog.prepend(div);
 }
@@ -243,7 +349,7 @@ function renderVoiceCard(label, text, cls) {
 async function sendToBuyna(text) {
   const phone = getPhone();
   if (!phone) { renderVoiceCard('Error', 'Enter your phone number first.'); return; }
-  renderVoiceCard('You said', text);
+  renderVoiceCard('You said', text, 'you');
   try {
     const res = await fetch('/voice', {
       method: 'POST',
@@ -251,11 +357,11 @@ async function sendToBuyna(text) {
       body: JSON.stringify({ phone, text }),
     });
     const data = await res.json();
-    renderVoiceCard('BUYNA say', data.reply, 'reply');
+    renderVoiceCard('BUYNA say', data.reply, 'buyna');
     speak(data.reply);
     loadDashboard();
   } catch (err) {
-    renderVoiceCard('Error', 'Network problem — try again.');
+    renderVoiceCard('Error', 'Network problem — try again.', 'you');
   }
 }
 
@@ -273,22 +379,22 @@ if (SpeechRecognition) {
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
   recognition.onresult = (event) => sendToBuyna(event.results[0][0].transcript);
-  recognition.onerror = () => { micLabel.textContent = 'Did not catch that — tap to try again'; };
+  recognition.onerror = () => { micLabel.textContent = 'did not catch that — tap to try again'; };
   recognition.onend = () => {
     listening = false;
     micBtn.classList.remove('listening');
-    if (micLabel.textContent === 'Listening...') micLabel.textContent = 'Tap to talk';
+    if (micLabel.textContent === 'listening...') micLabel.textContent = 'tap to talk';
   };
   micBtn.addEventListener('click', () => {
     if (listening) return;
     listening = true;
     micBtn.classList.add('listening');
-    micLabel.textContent = 'Listening...';
+    micLabel.textContent = 'listening...';
     recognition.start();
   });
 } else {
   micBtn.style.display = 'none';
-  micLabel.textContent = 'Voice needs Chrome or Edge';
+  micLabel.textContent = 'voice needs Chrome or Edge';
 }
 
 const savedPhone = getPhone();
