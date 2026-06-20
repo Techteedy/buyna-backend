@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BUYNA</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, system-ui, sans-serif;
+    background: #f5f6f8;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 60px;
+  }
+  .title { font-size: 30px; font-weight: 800; color: #1a6bc4; margin: 8px 0 0; }
+  .subtitle { font-size: 14px; color: #666; margin: 4px 0 28px; text-align: center; }
+  .mic-button {
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: #1a6bc4;
+    border: none;
+    color: white;
+    font-size: 48px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(26,107,196,0.35);
+    transition: transform 0.15s, background 0.2s;
+  }
+  .mic-button:active { transform: scale(0.95); }
+  .mic-button.listening { background: #d85a30; animation: pulse 1.2s infinite; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(216,90,48,0.5); }
+    70% { box-shadow: 0 0 0 22px rgba(216,90,48,0); }
+    100% { box-shadow: 0 0 0 0 rgba(216,90,48,0); }
+  }
+  .mic-label { margin-top: 14px; font-size: 14px; color: #888; font-weight: 600; }
+  .card {
+    width: 100%; max-width: 380px;
+    background: white;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-top: 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .card-label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; font-weight: 700; }
+  .card-text { font-size: 16px; color: #222; line-height: 1.4; }
+  .card.reply { background: #e6f1fb; }
+  .card.error { background: #fcebeb; }
+  .examples {
+    width: 100%; max-width: 380px;
+    margin-top: 28px;
+  }
+  .examples-title { font-size: 12px; color: #999; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+  .example-chip {
+    display: inline-block;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 13px;
+    color: #444;
+    margin: 0 6px 8px 0;
+    cursor: pointer;
+  }
+  .example-chip:hover { background: #f0f0f0; }
+  .unsupported {
+    background: #faeeda; color: #633806; border-radius: 10px; padding: 14px;
+    font-size: 14px; max-width: 380px; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="title">BUYNA</div>
+<div class="subtitle">Tap the mic and talk your sale — for Pidgin</div>
+
+<button class="mic-button" id="micBtn">&#127908;</button>
+<div class="mic-label" id="micLabel">Tap to talk</div>
+
+<div id="results"></div>
+
+<div class="examples">
+  <div class="examples-title">Or try one of these</div>
+  <span class="example-chip" data-text="I sell 5 bag rice for 47000">I sell 5 bag rice for 47000</span>
+  <span class="example-chip" data-text="I save 2000">I save 2000</span>
+  <span class="example-chip" data-text="how much I sell today">how much I sell today</span>
+  <span class="example-chip" data-text="I spend 500 on transport">I spend 500 on transport</span>
+</div>
+
+<script>
+const MY_PHONE = localStorage.getItem('buyna_phone') || '2348012345678';
+const micBtn = document.getElementById('micBtn');
+const micLabel = document.getElementById('micLabel');
+const results = document.getElementById('results');
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let listening = false;
+
+function renderCard(label, text, cls) {
+  const div = document.createElement('div');
+  div.className = 'card' + (cls ? ' ' + cls : '');
+  div.innerHTML = `<div class="card-label">${label}</div><div class="card-text"></div>`;
+  div.querySelector('.card-text').textContent = text;
+  results.prepend(div);
+}
+
+async function sendToBuyna(text) {
+  renderCard('You said', text);
+  try {
+    const res = await fetch('/voice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: MY_PHONE, text }),
+    });
+    const data = await res.json();
+    renderCard('BUYNA say', data.reply, 'reply');
+    speak(data.reply);
+  } catch (err) {
+    renderCard('Error', 'Network problem — check your connection and try again.', 'error');
+  }
+}
+
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'en-NG';
+  utter.rate = 0.95;
+  window.speechSynthesis.speak(utter);
+}
+
+if (SpeechRecognition) {
+  recognition = new SpeechRecognition();
+  recognition.lang = 'en-NG';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    sendToBuyna(transcript);
+  };
+  recognition.onerror = () => {
+    micLabel.textContent = 'Did not catch that — tap to try again';
+  };
+  recognition.onend = () => {
+    listening = false;
+    micBtn.classList.remove('listening');
+    if (micLabel.textContent === 'Listening...') micLabel.textContent = 'Tap to talk';
+  };
+
+  micBtn.addEventListener('click', () => {
+    if (listening) return;
+    listening = true;
+    micBtn.classList.add('listening');
+    micLabel.textContent = 'Listening...';
+    recognition.start();
+  });
+} else {
+  micBtn.style.display = 'none';
+  micLabel.innerHTML = '';
+  const warn = document.createElement('div');
+  warn.className = 'unsupported';
+  warn.textContent = 'Voice input needs Chrome or Edge on this device. Try the example phrases below instead.';
+  micLabel.appendChild(warn);
+}
+
+document.querySelectorAll('.example-chip').forEach(chip => {
+  chip.addEventListener('click', () => sendToBuyna(chip.dataset.text));
+});
+</script>
+
+</body>
+</html>

@@ -5,21 +5,26 @@ const { handleIntent } = require('../pidgin/actions');
 
 // The app does Speech-to-Text on-device, then POSTs the transcribed text here.
 // Body: { phone: "2348012345678", text: "I sell 5 bag rice for 47000" }
-router.post('/voice', (req, res) => {
+router.post('/voice', async (req, res) => {
   const { phone, text } = req.body;
   if (!phone || !text) {
     return res.status(400).json({ error: 'phone and text are required' });
   }
 
-  const parsed = parsePidgin(text);
-  const { text: reply, data } = handleIntent(phone, parsed, 'voice');
+  try {
+    const parsed = parsePidgin(text);
+    const { text: reply, data } = await handleIntent(phone, parsed, 'voice');
 
-  res.json({
-    intent: parsed.intent,
-    parsed,
-    reply,
-    data: data || null,
-  });
+    res.json({
+      intent: parsed.intent,
+      parsed,
+      reply,
+      data: data || null,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong processing that.' });
+  }
 });
 
 module.exports = router;

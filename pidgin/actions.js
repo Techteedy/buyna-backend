@@ -1,110 +1,115 @@
-const db = require('../db');
+const { query } = require('../db');
 const responses = require('./responses');
 
-function ensureUser(phone) {
-  db.prepare(`INSERT INTO users (phone) VALUES (?) ON CONFLICT(phone) DO NOTHING`).run(phone);
+async function ensureUser(phone) {
+  await query(`INSERT INTO users (phone) VALUES ($1) ON CONFLICT (phone) DO NOTHING`, [phone]);
 }
 
-function todayTotals(phone) {
-  const row = db.prepare(`
+async function todayTotals(phone) {
+  const rows = await query(`
     SELECT COALESCE(SUM(amount),0) AS total, COALESCE(SUM(profit),0) AS profit, COUNT(*) AS cnt
-    FROM sales WHERE user_phone = ? AND date(created_at) = date('now')
-  `).get(phone);
-  return { total: row.total, profit: row.profit, cnt: row.cnt };
+    FROM sales WHERE user_phone = $1 AND created_at::date = now()::date
+  `, [phone]);
+  const row = rows[0];
+  return { total: Number(row.total), profit: Number(row.profit), cnt: Number(row.cnt) };
 }
 
-function recordSale(phone, parsed, channel) {
+async function recordSale(phone, parsed, channel) {
   const { item, quantity, amount } = parsed;
   if (!amount) return { text: 'I no catch the amount. Try again, talk the price clearly.' };
 
-  const stockRow = db.prepare(`SELECT * FROM stock WHERE user_phone = ? AND item = ?`).get(phone, item);
-  const unitCost = stockRow ? stockRow.unit_cost : 0;
+  const stockRows = await query(`SELECT * FROM stock WHERE user_phone = $1 AND item = $2`, [phone, item]);
+  const stockRow = stockRows[0];
+  const unitCost = stockRow ? Number(stockRow.unit_cost) : 0;
   const costBasis = unitCost * quantity;
   const profit = amount - costBasis;
 
-  db.prepare(`
+  await query(`
     INSERT INTO sales (user_phone, item, quantity, amount, cost_basis, profit, channel)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(phone, item, quantity, amount, costBasis, profit, channel);
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+  `, [phone, item, quantity, amount, costBasis, profit, channel]);
 
   let lowStockNote = '';
   if (stockRow) {
-    const newQty = Math.max(stockRow.quantity - quantity, 0);
-    db.prepare(`UPDATE stock SET quantity = ?, updated_at = datetime('now') WHERE id = ?`).run(newQty, stockRow.id);
-    if (newQty <= stockRow.low_stock_threshold) {
+    const newQty = Math.max(Number(stockRow.quantity) - quantity, 0);
+    await query(`UPDATE stock SET quantity = $1, updated_at = now() WHERE id = $2`, [newQty, stockRow.id]);
+    if (newQty <= Number(stockRow.low_stock_threshold)) {
       lowStockNote = ' ' + responses.lowStockAlert({ item, quantity: newQty });
     }
   }
 
-  const { total, profit: todayProfit } = todayTotals(phone);
+  const { total, profit: todayProfit } = await todayTotals(phone);
   const text = responses.saleRecorded({ item, quantity, amount, profit, todayTotal: total, todayProfit }) + lowStockNote;
   return { text, data: { item, quantity, amount, profit } };
 }
 
-function recordExpense(phone, parsed, channel) {
+async function recordExpense(phone, parsed, channel) {
   const { amount, category } = parsed;
   if (!amount) return { text: 'I no catch the amount wey you spend.' };
-  db.prepare(`INSERT INTO expenses (user_phone, category, amount, channel) VALUES (?, ?, ?, ?)`)
-    .run(phone, category, amount, channel);
+  await query(`INSERT INTO expenses (user_phone, category, amount, channel) VALUES ($1, $2, $3, $4)`,
+    [phone, category, amount, channel]);
   return { text: responses.expenseRecorded({ amount, category }) };
 }
 
-function koloDeposit(phone, parsed) {
+async function koloDeposit(phone, parsed) {
   const { amount } = parsed;
   if (!amount) return { text: 'How much you save? Talk the amount.' };
-  let goal = db.prepare(`SELECT * FROM kolo WHERE user_phone = ? ORDER BY id LIMIT 1`).get(phone);
+  let rows = await query(`SELECT * FROM kolo WHERE user_phone = $1 ORDER BY id LIMIT 1`, [phone]);
+  let goal = rows[0];
   if (!goal) {
-    db.prepare(`INSERT INTO kolo (user_phone, goal_name, target_amount, saved_amount) VALUES (?, 'General savings', 0, 0)`).run(phone);
-    goal = db.prepare(`SELECT * FROM kolo WHERE user_phone = ? ORDER BY id LIMIT 1`).get(phone);
+    await query(`INSERT INTO kolo (user_phone, goal_name, target_amount, saved_amount) VALUES ($1, 'General savings', 0, 0)`, [phone]);
+    rows = await query(`SELECT * FROM kolo WHERE user_phone = $1 ORDER BY id LIMIT 1`, [phone]);
+    goal = rows[0];
   }
-  const savedAmount = goal.saved_amount + amount;
-  db.prepare(`UPDATE kolo SET saved_amount = ? WHERE id = ?`).run(savedAmount, goal.id);
-  return { text: responses.koloDeposit({ amount, savedAmount, targetAmount: goal.target_amount, goalName: goal.goal_name }) };
+  const savedAmount = Number(goal.saved_amount) + amount;
+  await query(`UPDATE kolo SET saved_amount = $1 WHERE id = $2`, [savedAmount, goal.id]);
+  return { text: responses.koloDeposit({ amount, savedAmount, targetAmount: Number(goal.target_amount), goalName: goal.goal_name }) };
 }
 
-function koloBalance(phone) {
-  const goal = db.prepare(`SELECT * FROM kolo WHERE user_phone = ? ORDER BY id LIMIT 1`).get(phone);
-  return { text: responses.koloBalance({ savedAmount: goal ? goal.saved_amount : 0 }) };
+async function koloBalance(phone) {
+  const rows = await query(`SELECT * FROM kolo WHERE user_phone = $1 ORDER BY id LIMIT 1`, [phone]);
+  return { text: responses.koloBalance({ savedAmount: rows[0] ? Number(rows[0].saved_amount) : 0 }) };
 }
 
-function debtQuery(phone) {
-  const debts = db.prepare(`SELECT * FROM debts WHERE user_phone = ? AND status = 'owing'`).all(phone);
-  const total = debts.reduce((s, d) => s + d.amount, 0);
+async function debtQuery(phone) {
+  const debts = await query(`SELECT * FROM debts WHERE user_phone = $1 AND status = 'owing'`, [phone]);
+  const total = debts.reduce((s, d) => s + Number(d.amount), 0);
   return { text: responses.debtQuery({ debts, total }) };
 }
 
-function debtRecord(phone, parsed) {
+async function debtRecord(phone, parsed) {
   const { customerName, amount } = parsed;
   if (!amount) return { text: 'How much the customer owe?' };
-  db.prepare(`INSERT INTO debts (user_phone, customer_name, amount) VALUES (?, ?, ?)`).run(phone, customerName, amount);
+  await query(`INSERT INTO debts (user_phone, customer_name, amount) VALUES ($1, $2, $3)`, [phone, customerName, amount]);
   return { text: responses.debtRecorded({ customerName, amount }) };
 }
 
-function stockQuery(phone) {
-  const stock = db.prepare(`SELECT * FROM stock WHERE user_phone = ?`).all(phone);
+async function stockQuery(phone) {
+  const stock = await query(`SELECT * FROM stock WHERE user_phone = $1`, [phone]);
   return { text: responses.stockQuery({ stock }) };
 }
 
-function restock(phone, parsed) {
+async function restock(phone, parsed) {
   const { item, quantity, unitCost } = parsed;
-  const existing = db.prepare(`SELECT * FROM stock WHERE user_phone = ? AND item = ?`).get(phone, item);
+  const rows = await query(`SELECT * FROM stock WHERE user_phone = $1 AND item = $2`, [phone, item]);
+  const existing = rows[0];
   if (existing) {
-    db.prepare(`UPDATE stock SET quantity = quantity + ?, unit_cost = COALESCE(?, unit_cost), updated_at = datetime('now') WHERE id = ?`)
-      .run(quantity, unitCost, existing.id);
+    await query(`UPDATE stock SET quantity = quantity + $1, unit_cost = COALESCE($2, unit_cost), updated_at = now() WHERE id = $3`,
+      [quantity, unitCost, existing.id]);
   } else {
-    db.prepare(`INSERT INTO stock (user_phone, item, quantity, unit_cost) VALUES (?, ?, ?, ?)`)
-      .run(phone, item, quantity, unitCost || 0);
+    await query(`INSERT INTO stock (user_phone, item, quantity, unit_cost) VALUES ($1, $2, $3, $4)`,
+      [phone, item, quantity, unitCost || 0]);
   }
   return { text: responses.restockRecorded({ item, quantity }) };
 }
 
-function dailySummary(phone) {
-  const { total, profit, cnt } = todayTotals(phone);
+async function dailySummary(phone) {
+  const { total, profit, cnt } = await todayTotals(phone);
   return { text: responses.dailySummary({ todayTotal: total, todayProfit: profit, salesCount: cnt }) };
 }
 
-function handleIntent(phone, parsed, channel = 'voice') {
-  ensureUser(phone);
+async function handleIntent(phone, parsed, channel = 'voice') {
+  await ensureUser(phone);
   switch (parsed.intent) {
     case 'RECORD_SALE': return recordSale(phone, parsed, channel);
     case 'RECORD_EXPENSE': return recordExpense(phone, parsed, channel);
