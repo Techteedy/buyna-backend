@@ -21,11 +21,43 @@ async function todayTotals(phone) {
   return { total: Number(row.total), profit: Number(row.profit), cnt: Number(row.cnt) };
 }
 
+async function isApprentice(phone) {
+  const rows = await query(`SELECT * FROM apprentices WHERE apprentice_phone = $1 AND active = true`, [phone]);
+  return rows[0] || null;
+}
+
+async function addApprentice(bossPhone, parsed) {
+  const { apprenticePhone, apprenticeName } = parsed;
+  if (!apprenticePhone) return { text: responses.apprenticeAddFailed() };
+  await query(`
+    INSERT INTO apprentices (boss_phone, apprentice_phone, apprentice_name)
+    VALUES ($1, $2, $3)
+    ON CONFLICT (boss_phone, apprentice_phone) DO UPDATE SET apprentice_name = $3, active = true
+  `, [bossPhone, apprenticePhone, apprenticeName]);
+  return { text: responses.apprenticeAdded({ name: apprenticeName, phone: apprenticePhone }) };
+}
+
+async function notifyBoss(bossPhone, message) {
+  await query(`INSERT INTO notifications (boss_phone, message) VALUES ($1, $2)`, [bossPhone, message]);
+}
+
+async function notificationsQuery(phone) {
+  const rows = await query(`SELECT * FROM notifications WHERE boss_phone = $1 AND is_read = false ORDER BY created_at DESC LIMIT 10`, [phone]);
+  if (!rows.length) return { text: responses.notificationsEmpty() };
+  await query(`UPDATE notifications SET is_read = true WHERE boss_phone = $1 AND is_read = false`, [phone]);
+  const list = rows.map(r => r.message).join(' ');
+  return { text: responses.notificationsList({ list }) };
+}
+
 async function recordSale(phone, parsed, channel) {
   const { item, quantity, amount } = parsed;
   if (!amount) return { text: 'I no catch the amount. Try again, talk the price clearly.' };
 
-  const stockRows = await query(`SELECT * FROM stock WHERE user_phone = $1 AND item = $2`, [phone, item]);
+  const apprenticeRow = await isApprentice(phone);
+  const recordedBy = apprenticeRow ? 'apprentice' : 'boss';
+  const ownerPhone = apprenticeRow ? apprenticeRow.boss_phone : phone;
+
+  const stockRows = await query(`SELECT * FROM stock WHERE user_phone = $1 AND item = $2`, [ownerPhone, item]);
   const stockRow = stockRows[0];
   const unitCost = stockRow ? Number(stockRow.unit_cost) : 0;
   const costBasis = unitCost * quantity;
@@ -37,9 +69,9 @@ async function recordSale(phone, parsed, channel) {
   }
 
   await query(`
-    INSERT INTO sales (user_phone, item, quantity, amount, cost_basis, profit, channel)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
-  `, [phone, item, quantity, amount, costBasis, profit, channel]);
+    INSERT INTO sales (user_phone, item, quantity, amount, cost_basis, profit, channel, recorded_by)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+  `, [ownerPhone, item, quantity, amount, costBasis, profit, channel, recordedBy]);
 
   let lowStockNote = '';
   if (stockRow) {
@@ -50,7 +82,13 @@ async function recordSale(phone, parsed, channel) {
     }
   }
 
-  const { total, profit: todayProfit } = await todayTotals(phone);
+  if (apprenticeRow) {
+    await notifyBoss(ownerPhone, responses.apprenticeSaleAlert({ apprenticeName: apprenticeRow.apprentice_name, item, amount }));
+    // Apprentice never sees totals or profit — just a plain confirmation
+    return { text: `OK, sale recorded — ${item} for ${amount.toLocaleString('en-NG')}. Oga go see am.`, data: { item, quantity, amount } };
+  }
+
+  const { total, profit: todayProfit } = await todayTotals(ownerPhone);
   const text = responses.saleRecorded({ item, quantity, amount, profit, todayTotal: total, todayProfit }) + belowCostNote + lowStockNote;
   return { text, data: { item, quantity, amount, profit } };
 }
@@ -262,6 +300,12 @@ async function lifeStagesQuery() {
 
 async function handleIntent(phone, parsed, channel = 'voice') {
   await ensureUser(phone);
+
+  const apprenticeRow = await isApprentice(phone);
+  if (apprenticeRow && parsed.intent !== 'RECORD_SALE') {
+    return { text: responses.apprenticeRestricted() };
+  }
+
   let result;
   switch (parsed.intent) {
     case 'RECORD_SALE': result = await recordSale(phone, parsed, channel); break;
@@ -282,6 +326,8 @@ async function handleIntent(phone, parsed, channel = 'voice') {
     case 'TASK_QUERY': result = await taskQuery(phone); break;
     case 'BUSINESS_EVALUATE': result = await evaluateBusiness(phone, parsed); break;
     case 'LIFE_STAGES_QUERY': result = await lifeStagesQuery(); break;
+    case 'ADD_APPRENTICE': result = await addApprentice(phone, parsed); break;
+    case 'NOTIFICATIONS_QUERY': result = await notificationsQuery(phone); break;
     default: result = { text: responses.unknown() };
   }
 

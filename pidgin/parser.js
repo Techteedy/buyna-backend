@@ -103,6 +103,16 @@ function parseReconcile(text) {
   };
 }
 
+// "add apprentice 2348033334444 named Chinedu" -> { phone: "2348033334444", name: "Chinedu" }
+function parseApprentice(text) {
+  const phoneMatch = text.match(/\b(\d{10,14})\b/);
+  const nameMatch = text.match(/\bnamed\s+([a-zA-Z]+)/i);
+  return {
+    apprenticePhone: phoneMatch ? phoneMatch[1] : null,
+    apprenticeName: nameMatch ? nameMatch[1] : 'Apprentice',
+  };
+}
+
 const INTENT_RULES = [
   { intent: 'DAILY_SUMMARY', test: t => /\b(how much.*today|today summary|wetin i make today|profit today)\b/i.test(t) },
   { intent: 'KOLO_BALANCE', test: t => /\b(kolo|savings)\b/i.test(t) && /\b(check|balance|how much)\b/i.test(t) },
@@ -114,6 +124,8 @@ const INTENT_RULES = [
   { intent: 'RESTOCK_PREDICTION_QUERY', test: t => /\bwhen\b.*\brestock\b/i.test(t) },
   { intent: 'TASK_QUERY', test: t => /\b(my task|today task|day task|what.*do today)\b/i.test(t) },
   { intent: 'LIFE_STAGES_QUERY', test: t => /\b(life stages|stages of.*business)\b/i.test(t) },
+  { intent: 'NOTIFICATIONS_QUERY', test: t => /\b(notifications?|apprentice sale|wetin apprentice)\b/i.test(t) && /\b(check|any|show)\b/i.test(t) },
+  { intent: 'ADD_APPRENTICE', test: t => /\badd apprentice\b/i.test(t) },
   { intent: 'BUSINESS_EVALUATE', test: t => /\b(want to start|should i start|evaluate|is.*business good|thinking of starting)\b/i.test(t) },
   { intent: 'SET_CAPITAL', test: t => /\b(my capital|set capital)\b/i.test(t) },
   { intent: 'SET_COST_PRICE', test: t => /\bcost price\b/i.test(t) },
@@ -177,6 +189,9 @@ function parsePidgin(rawText) {
       break;
     case 'RECONCILE':
       Object.assign(result, parseReconcile(text));
+      break;
+    case 'ADD_APPRENTICE':
+      Object.assign(result, parseApprentice(text));
       break;
     default:
       break;

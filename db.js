@@ -105,6 +105,24 @@ async function initSchema() {
       name TEXT NOT NULL,
       cost NUMERIC DEFAULT 0
     );
+
+    CREATE TABLE IF NOT EXISTS apprentices (
+      id SERIAL PRIMARY KEY,
+      boss_phone TEXT NOT NULL,
+      apprentice_phone TEXT NOT NULL,
+      apprentice_name TEXT,
+      active BOOLEAN DEFAULT true,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      UNIQUE(boss_phone, apprentice_phone)
+    );
+
+    CREATE TABLE IF NOT EXISTS notifications (
+      id SERIAL PRIMARY KEY,
+      boss_phone TEXT NOT NULL,
+      message TEXT NOT NULL,
+      is_read BOOLEAN DEFAULT false,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
   `);
 }
 

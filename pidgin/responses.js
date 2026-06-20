@@ -107,6 +107,24 @@ const responses = {
   lifeStages: ({ stages }) =>
     `Every business pass through 5 stages: ${stages.map((s, i) => `${i + 1}) ${s}`).join(', ')}. ` +
     `Tell me which stage you dey, and I fit guide you better.`,
+
+  apprenticeAdded: ({ name, phone }) =>
+    `OK, I don add ${name} as your apprentice. ${name} fit only record sales — dem no fit see your totals or delete anything. I go alert you every time dem record a sale.`,
+
+  apprenticeAddFailed: () =>
+    `I need the apprentice phone number to add them. Try say "add apprentice 08033334444 named Chinedu".`,
+
+  apprenticeSaleAlert: ({ apprenticeName, item, amount }) =>
+    `${apprenticeName} just record a sale — ${item} for ${formatNaira(amount)}.`,
+
+  apprenticeRestricted: () =>
+    `Apprentice fit only record sales for now. Ask oga for anything else.`,
+
+  notificationsEmpty: () =>
+    `No new notification. Everything quiet for now.`,
+
+  notificationsList: ({ list }) =>
+    `Here's wetin happen — ${list}`,
 };
 
 module.exports = responses;
