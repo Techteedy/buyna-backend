@@ -298,6 +298,26 @@ async function lifeStagesQuery() {
   return { text: responses.lifeStages({ stages: LIFE_STAGES }) };
 }
 
+async function removeApprentice(bossPhone, parsed) {
+  const { apprenticePhone } = parsed;
+  if (!apprenticePhone) return { text: 'I need the apprentice phone number to remove them.' };
+  await query(`UPDATE apprentices SET active = false WHERE boss_phone = $1 AND apprentice_phone = $2`, [bossPhone, apprenticePhone]);
+  return { text: `OK, I don remove that apprentice. Dem no fit record sales again.` };
+}
+
+async function setKoloTarget(phone, parsed) {
+  const { amount, goalName } = parsed;
+  if (!amount) return { text: 'How much be the target? Talk the amount.' };
+  const name = goalName || 'General savings';
+  const rows = await query(`SELECT * FROM kolo WHERE user_phone = $1 AND goal_name = $2`, [phone, name]);
+  if (rows[0]) {
+    await query(`UPDATE kolo SET target_amount = $1 WHERE id = $2`, [amount, rows[0].id]);
+  } else {
+    await query(`INSERT INTO kolo (user_phone, goal_name, target_amount, saved_amount) VALUES ($1, $2, $3, 0)`, [phone, name, amount]);
+  }
+  return { text: `OK, I don set your target for ${name} to ${amount.toLocaleString('en-NG')}.` };
+}
+
 async function handleIntent(phone, parsed, channel = 'voice') {
   await ensureUser(phone);
 
@@ -327,6 +347,8 @@ async function handleIntent(phone, parsed, channel = 'voice') {
     case 'BUSINESS_EVALUATE': result = await evaluateBusiness(phone, parsed); break;
     case 'LIFE_STAGES_QUERY': result = await lifeStagesQuery(); break;
     case 'ADD_APPRENTICE': result = await addApprentice(phone, parsed); break;
+    case 'REMOVE_APPRENTICE': result = await removeApprentice(phone, parsed); break;
+    case 'SET_KOLO_TARGET': result = await setKoloTarget(phone, parsed); break;
     case 'NOTIFICATIONS_QUERY': result = await notificationsQuery(phone); break;
     default: result = { text: responses.unknown() };
   }

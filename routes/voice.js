@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { parsePidgin } = require('../pidgin/parser');
 const { handleIntent } = require('../pidgin/actions');
+const { checkPinAccess } = require('./auth');
 
 // The app does Speech-to-Text on-device, then POSTs the transcribed text here.
 // Body: { phone: "2348012345678", text: "I sell 5 bag rice for 47000" }
@@ -12,6 +13,10 @@ router.post('/voice', async (req, res) => {
   }
 
   try {
+    const providedPin = req.headers['x-buyna-pin'];
+    const allowed = await checkPinAccess(phone, providedPin);
+    if (!allowed) return res.status(401).json({ error: 'PIN required' });
+
     const parsed = parsePidgin(text);
     const { text: reply, data } = await handleIntent(phone, parsed, 'voice');
 

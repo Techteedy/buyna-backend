@@ -22,10 +22,14 @@ async function initSchema() {
       name TEXT,
       role TEXT DEFAULT 'boss',
       capital_amount NUMERIC DEFAULT 0,
+      pin_hash TEXT,
+      pin_salt TEXT,
       created_at TIMESTAMPTZ DEFAULT now()
     );
 
     ALTER TABLE users ADD COLUMN IF NOT EXISTS capital_amount NUMERIC DEFAULT 0;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS pin_hash TEXT;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS pin_salt TEXT;
 
     CREATE TABLE IF NOT EXISTS stock (
       id SERIAL PRIMARY KEY,

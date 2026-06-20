@@ -233,6 +233,7 @@
 
     <div class="nav-group-label">Account</div>
     <button class="nav-item" data-page="notifications">${'icon_bell'}<span>Notifications</span><span class="badge-dot" id="notifBadge" style="display:none">0</span></button>
+    <button class="nav-item" data-page="settings">${'icon_settings'}<span>Settings</span></button>
 
     <div class="sidebar-footer">
       <div class="trading-ticket">
@@ -286,6 +287,7 @@ const ICONS = {
   icon_apprentices: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="7" r="3.2"/><path d="M3 20c0-3.3 2.7-5.8 6-5.8s6 2.5 6 5.8"/><path d="M17 8.5a2.6 2.6 0 110 5.2M21 20c0-2.7-1.8-4.8-4.5-5.5"/></svg>',
   icon_tools: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.3 2.3-2.3-.7-.7-2.3z"/></svg>',
   icon_bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9a6 6 0 1112 0c0 4 1.5 5.5 1.5 6.5H4.5C4.5 14.5 6 13 6 9z"/><path d="M9.5 19a2.5 2.5 0 005 0"/></svg>',
+  icon_settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V19a2 2 0 11-4 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H5a2 2 0 110-4h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3h0a1.6 1.6 0 001-1.5V5a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8v0a1.6 1.6 0 001.5 1H19a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/></svg>',
 };
 
 // Replace template placeholders with real icon markup (kept as simple string replace, no templating lib needed)
@@ -310,10 +312,44 @@ const PAGE_META = {
   apprentices: { title: 'Apprentices', subtitle: 'Who can record sales for you' },
   tools: { title: 'Business tools', subtitle: 'Evaluate an idea before you start' },
   notifications: { title: 'Notifications', subtitle: 'Everything that happened while you were away' },
+  settings: { title: 'Settings', subtitle: 'Security and your data' },
 };
 
 function getPhone() { return localStorage.getItem('buyna_phone') || ''; }
 function setPhone(p) { localStorage.setItem('buyna_phone', p); document.getElementById('phoneInput').value = p; }
+function getStoredPin() { return sessionStorage.getItem('buyna_pin') || ''; }
+function setStoredPin(p) { sessionStorage.setItem('buyna_pin', p); }
+function clearStoredPin() { sessionStorage.removeItem('buyna_pin'); }
+
+// Wraps fetch with the PIN header. On a 401 (PIN required or wrong), prompts
+// once, verifies it against the backend, stores it for the session, and
+// retries the original request automatically.
+async function pinAwareFetch(url, options = {}) {
+  options.headers = options.headers || {};
+  const pin = getStoredPin();
+  if (pin) options.headers['x-buyna-pin'] = pin;
+
+  let res = await fetch(url, options);
+  if (res.status === 401) {
+    const phone = getPhone();
+    const entered = prompt('Enter your BUYNA PIN to unlock this account:');
+    if (!entered) throw new Error('PIN required');
+
+    const verifyRes = await fetch('/api/auth/verify-pin', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, pin: entered }),
+    });
+    const verifyData = await verifyRes.json();
+    if (!verifyData.valid) {
+      alert('Wrong PIN. Try again.');
+      throw new Error('Wrong PIN');
+    }
+    setStoredPin(entered);
+    options.headers['x-buyna-pin'] = entered;
+    res = await fetch(url, options);
+  }
+  return res;
+}
 function formatNaira(n) { return '₦' + Number(n || 0).toLocaleString('en-NG'); }
 function timeAgo(iso) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -335,7 +371,7 @@ async function loadDashboard() {
   const phone = getPhone();
   if (!phone) { dashboardData = null; renderPage(); return; }
   try {
-    const res = await fetch('/api/dashboard/' + encodeURIComponent(phone));
+    const res = await pinAwareFetch('/api/dashboard/' + encodeURIComponent(phone));
     dashboardData = await res.json();
   } catch (err) {
     dashboardData = null;
@@ -356,7 +392,7 @@ async function sendCommand(text, onDone) {
   const phone = getPhone();
   if (!phone) { alert('Enter your phone number first, in the sidebar.'); return; }
   try {
-    const res = await fetch('/voice', {
+    const res = await pinAwareFetch('/voice', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone, text }),
@@ -452,6 +488,10 @@ function pageKolo() {
     <div class="row"><input id="koloAmount" placeholder="amount"><input id="koloGoal" placeholder="goal name (optional)"></div>
     <button id="koloSubmit">Save to Kolo</button>
   </div>`;
+  const targetForm = `<div class="quick-form">
+    <div class="row"><input id="koloTargetGoal" placeholder="goal name"><input id="koloTargetAmount" placeholder="target amount"></div>
+    <button id="koloTargetSubmit">Set target</button>
+  </div>`;
   let rows = !d.kolo.length ? `<div class="empty-state">No Kolo savings yet.</div>`
     : d.kolo.map(k => {
         const pct = k.targetAmount > 0 ? Math.min(100, Math.round((k.savedAmount / k.targetAmount) * 100)) : null;
@@ -460,7 +500,7 @@ function pageKolo() {
           ${pct !== null ? `<div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>` : ''}
         </div>`;
       }).join('');
-  return card('Save to Kolo', form) + card('Your Kolo goals', rows);
+  return card('Save to Kolo', form) + card('Set a savings target', targetForm) + card('Your Kolo goals', rows);
 }
 
 function pageDebts() {
@@ -508,7 +548,7 @@ function pageApprentices() {
     <div class="form-hint">They will only be able to record sales — never see totals or delete anything.</div>
   </div>`;
   const rows = !d.apprentices.length ? `<div class="empty-state">No apprentices added yet.</div>`
-    : d.apprentices.map(a => `<div class="ledger-row"><span class="label">${a.name}<span class="stamp apprentice">apprentice</span></span><span class="value" style="font-size:12px;color:var(--ink-soft);font-weight:400">${a.phone}</span></div>`).join('');
+    : d.apprentices.map(a => `<div class="ledger-row"><span class="label">${a.name}<span class="stamp apprentice">apprentice</span></span><span class="value" style="font-size:12px;color:var(--ink-soft);font-weight:400;display:flex;align-items:center;gap:8px">${a.phone}<button class="remove-apprentice-btn" data-phone="${a.phone}" style="font-size:11px;padding:3px 8px;border:1px solid var(--stamp-red);color:var(--stamp-red);background:none;border-radius:4px;cursor:pointer">remove</button></span></div>`).join('');
   return card('Add an apprentice', form) + card('Your apprentices', rows);
 }
 
@@ -528,10 +568,27 @@ function pageNotifications() {
   return card('Notifications', rows);
 }
 
+function pageSettings() {
+  const phone = getPhone();
+  const pinForm = `<div class="quick-form">
+    <div class="row"><input type="password" id="newPin" placeholder="new 4-6 digit PIN" maxlength="6"></div>
+    <div class="row"><input type="password" id="currentPin" placeholder="current PIN (leave blank if first time)" maxlength="6"></div>
+    <button id="pinSubmit">Save PIN</button>
+    <div class="form-hint">Once set, your phone number alone won't open your ledger — your PIN is needed too.</div>
+  </div>`;
+
+  const reportHtml = `<div class="quick-form">
+    <button id="downloadReportBtn">Download business report (PDF)</button>
+    <div class="form-hint">Save it, print it, or share it yourself through WhatsApp.</div>
+  </div>`;
+
+  return card('Protect your account', pinForm) + card('Export your records', reportHtml);
+}
+
 const PAGE_RENDERERS = {
   home: pageHome, sales: pageSales, expenses: pageExpenses, kolo: pageKolo,
   debts: pageDebts, stock: pageStock, recipes: pageRecipes, apprentices: pageApprentices,
-  tools: pageTools, notifications: pageNotifications,
+  tools: pageTools, notifications: pageNotifications, settings: pageSettings,
 };
 
 let lastBanner = '';
@@ -596,10 +653,53 @@ function wireQuickActionForms() {
     if (!phone || !name) return;
     sendCommand(`add apprentice ${phone} named ${name}`, finishWithBanner);
   });
+  document.querySelectorAll('.remove-apprentice-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      sendCommand(`remove apprentice ${btn.dataset.phone}`, finishWithBanner);
+    });
+  });
+  on('koloTargetSubmit', () => {
+    const amt = document.getElementById('koloTargetAmount').value.trim();
+    const goal = document.getElementById('koloTargetGoal').value.trim();
+    if (!amt || !goal) return;
+    sendCommand(`set kolo target ${amt} for ${goal}`, finishWithBanner);
+  });
   on('toolsSubmit', () => {
     const text = document.getElementById('toolsQuery').value.trim();
     if (!text) return;
     sendCommand(text, finishWithBanner);
+  });
+  on('pinSubmit', async () => {
+    const newPin = document.getElementById('newPin').value.trim();
+    const currentPin = document.getElementById('currentPin').value.trim();
+    if (!/^\d{4,6}$/.test(newPin)) { alert('PIN must be 4-6 digits.'); return; }
+    const phone = getPhone();
+    try {
+      const res = await fetch('/api/auth/set-pin', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, pin: newPin, currentPin: currentPin || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) { finishWithBanner(data.error || 'Could not set PIN.', true); return; }
+      setStoredPin(newPin);
+      finishWithBanner('PIN saved. Your ledger is now protected.', false);
+    } catch (err) {
+      finishWithBanner('Network problem — try again.', true);
+    }
+  });
+  on('downloadReportBtn', async () => {
+    const phone = getPhone();
+    try {
+      const res = await pinAwareFetch('/api/report/' + encodeURIComponent(phone));
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `buyna-report-${phone}.pdf`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Could not download report — try again.');
+    }
   });
 }
 
@@ -621,7 +721,7 @@ document.querySelectorAll('.nav-item').forEach(btn => {
 
 document.getElementById('usePhoneBtn').addEventListener('click', () => {
   const p = document.getElementById('phoneInput').value.trim();
-  if (p) { setPhone(p); loadDashboard(); }
+  if (p) { clearStoredPin(); setPhone(p); loadDashboard(); }
 });
 
 // ---------- Mobile sidebar ----------

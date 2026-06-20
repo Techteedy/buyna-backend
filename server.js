@@ -11,6 +11,8 @@ app.use(express.static(path.join(__dirname, 'public'))); // serves the web demo 
 app.use('/', require('./routes/voice'));
 app.use('/', require('./routes/ussd'));
 app.use('/', require('./routes/dashboard'));
+app.use('/', require('./routes/auth').router);
+app.use('/', require('./routes/report'));
 
 app.get('/status', (req, res) => {
   res.json({ status: 'BUYNA backend running', endpoints: ['/voice (POST)', '/ussd (POST)'] });

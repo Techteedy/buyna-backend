@@ -126,6 +126,8 @@ const INTENT_RULES = [
   { intent: 'LIFE_STAGES_QUERY', test: t => /\b(life stages|stages of.*business)\b/i.test(t) },
   { intent: 'NOTIFICATIONS_QUERY', test: t => /\b(notifications?|apprentice sale|wetin apprentice)\b/i.test(t) && /\b(check|any|show)\b/i.test(t) },
   { intent: 'ADD_APPRENTICE', test: t => /\badd apprentice\b/i.test(t) },
+  { intent: 'REMOVE_APPRENTICE', test: t => /\bremove apprentice\b/i.test(t) },
+  { intent: 'SET_KOLO_TARGET', test: t => /\bset (kolo )?target\b/i.test(t) },
   { intent: 'BUSINESS_EVALUATE', test: t => /\b(want to start|should i start|evaluate|is.*business good|thinking of starting)\b/i.test(t) },
   { intent: 'SET_CAPITAL', test: t => /\b(my capital|set capital)\b/i.test(t) },
   { intent: 'SET_COST_PRICE', test: t => /\bcost price\b/i.test(t) },
@@ -192,6 +194,15 @@ function parsePidgin(rawText) {
       break;
     case 'ADD_APPRENTICE':
       Object.assign(result, parseApprentice(text));
+      break;
+    case 'REMOVE_APPRENTICE': {
+      const phoneMatch = text.match(/\b(\d{10,14})\b/);
+      result.apprenticePhone = phoneMatch ? phoneMatch[1] : null;
+      break;
+    }
+    case 'SET_KOLO_TARGET':
+      result.amount = parseAmount(text);
+      result.goalName = parseGoalName(text);
       break;
     default:
       break;
