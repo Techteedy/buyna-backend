@@ -92,6 +92,21 @@ const responses = {
 
   onboardingComplete: () =>
     `Oga you don complete your first 90 days! Continue the good work — your habits don set well well.`,
+
+  businessEvaluation: ({ name, minCost, maxCost, successRate, firstBuy, successFactors }) => {
+    const factorsList = successFactors.map((f, i) => `${i + 1}) ${f}`).join(' ');
+    return `${name} — here's wetin you need to know. Startup cost dey range from ${formatNaira(minCost)} to ${formatNaira(maxCost)}, depending on your scale. ` +
+      `Rough success rate for businesses like this na about ${successRate} percent, based on common patterns. ` +
+      `Buy this first: ${firstBuy}. Key things wey go determine if you go succeed: ${factorsList}`;
+  },
+
+  businessNotFound: () =>
+    `I no get specific data for that business yet, but here's general advice: start small with what you have, ` +
+    `track every sale and expense from day one, and grow only after you don prove the idea work for small scale first.`,
+
+  lifeStages: ({ stages }) =>
+    `Every business pass through 5 stages: ${stages.map((s, i) => `${i + 1}) ${s}`).join(', ')}. ` +
+    `Tell me which stage you dey, and I fit guide you better.`,
 };
 
 module.exports = responses;

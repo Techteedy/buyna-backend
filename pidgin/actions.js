@@ -1,6 +1,7 @@
 const { query } = require('../db');
 const responses = require('./responses');
 const { getTaskForDay, TOTAL_DAYS } = require('./onboarding-tasks');
+const { findBusiness, LIFE_STAGES } = require('./business-knowledge');
 
 async function ensureUser(phone) {
   await query(`INSERT INTO users (phone) VALUES ($1) ON CONFLICT (phone) DO NOTHING`, [phone]);
@@ -248,6 +249,17 @@ async function taskQuery(phone) {
   return { text: responses.taskForDay({ day: dayNumber, task }) };
 }
 
+// Business Evaluation Tool
+async function evaluateBusiness(phone, parsed) {
+  const biz = findBusiness(parsed.raw);
+  if (!biz) return { text: responses.businessNotFound() };
+  return { text: responses.businessEvaluation(biz) };
+}
+
+async function lifeStagesQuery() {
+  return { text: responses.lifeStages({ stages: LIFE_STAGES }) };
+}
+
 async function handleIntent(phone, parsed, channel = 'voice') {
   await ensureUser(phone);
   let result;
@@ -268,6 +280,8 @@ async function handleIntent(phone, parsed, channel = 'voice') {
     case 'RECIPE_COST_QUERY': result = await recipeCostQuery(phone, parsed); break;
     case 'RECONCILE': result = await reconcile(phone, parsed); break;
     case 'TASK_QUERY': result = await taskQuery(phone); break;
+    case 'BUSINESS_EVALUATE': result = await evaluateBusiness(phone, parsed); break;
+    case 'LIFE_STAGES_QUERY': result = await lifeStagesQuery(); break;
     default: result = { text: responses.unknown() };
   }
 
