@@ -25,6 +25,8 @@ async function initSchema() {
       created_at TIMESTAMPTZ DEFAULT now()
     );
 
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS capital_amount NUMERIC DEFAULT 0;
+
     CREATE TABLE IF NOT EXISTS stock (
       id SERIAL PRIMARY KEY,
       user_phone TEXT NOT NULL,
