@@ -6,7 +6,7 @@
 <title>BUYNA — your business, for Pidgin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --paper: #F6F1E4;
@@ -14,137 +14,116 @@
     --ink: #232120;
     --ink-soft: #7A7264;
     --ink-faint: #B7AE9C;
+    --sidebar: #1C2541;
+    --sidebar-soft: #2C3A63;
     --stamp-blue: #2B3A67;
     --stamp-blue-soft: #E7EAF2;
     --stamp-green: #1F7A4D;
     --stamp-green-soft: #E5F2EB;
     --stamp-red: #B23B2E;
     --stamp-red-soft: #FAEAE6;
-    --stamp-gold: #B5780C;
+    --stamp-gold: #C8870E;
     --stamp-gold-soft: #F8EFDC;
     --rule: #E6DFCC;
   }
   * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
   body {
-    margin: 0;
     background: var(--paper);
     color: var(--ink);
     font-family: 'Plus Jakarta Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
   }
   .mono { font-family: 'Space Mono', monospace; }
-  .display { font-family: 'Fraunces', serif; }
 
-  .header {
-    padding: 28px 20px 20px;
-    text-align: center;
-    border-bottom: 1px solid var(--rule);
-  }
-  .wordmark {
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: 30px;
-    letter-spacing: -0.01em;
-  }
-  .eyebrow {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    margin-top: 4px;
-  }
+  .app { display: flex; min-height: 100vh; }
 
-  .container { max-width: 460px; margin: 0 auto; padding: 18px 16px 70px; }
+  /* Sidebar */
+  .sidebar {
+    width: 230px; flex-shrink: 0; background: var(--sidebar); color: #EDEAE0;
+    padding: 22px 14px; display: flex; flex-direction: column;
+    position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto;
+    transition: transform 0.25s ease; z-index: 50;
+  }
+  .sidebar-brand { padding: 4px 10px 22px; }
+  .sidebar-wordmark { font-family: 'Fraunces', serif; font-weight: 700; font-size: 24px; color: #fff; }
+  .sidebar-tagline { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #9098B8; margin-top: 3px; }
 
-  /* Trader identity ticket */
-  .ticket {
-    background: var(--card);
-    border: 1px dashed var(--ink-faint);
-    border-radius: 4px;
-    padding: 12px 14px;
-    margin-bottom: 22px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  .nav-group-label {
+    font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #6E7699; padding: 14px 10px 6px;
   }
-  .ticket .ticket-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    white-space: nowrap;
+  .nav-item {
+    display: flex; align-items: center; gap: 11px; width: 100%; text-align: left;
+    background: none; border: none; color: #C7CCE0; padding: 10px 10px; border-radius: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 500;
+    cursor: pointer; margin-bottom: 2px; border-left: 3px solid transparent;
   }
-  .ticket input {
-    flex: 1; border: none; background: none; font-family: 'Space Mono', monospace;
-    font-size: 14px; color: var(--ink); outline: none; min-width: 0;
-  }
-  .ticket button {
-    background: var(--stamp-blue); color: white; border: none; border-radius: 3px;
-    padding: 7px 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;
-    font-size: 12px; cursor: pointer; white-space: nowrap;
+  .nav-item:hover { background: var(--sidebar-soft); }
+  .nav-item.active { background: var(--sidebar-soft); color: #fff; border-left-color: var(--stamp-gold); font-weight: 600; }
+  .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .nav-item .badge-dot {
+    margin-left: auto; background: var(--stamp-red); color: white; font-size: 10px; font-weight: 700;
+    border-radius: 10px; padding: 1px 6px; font-family: 'Space Mono', monospace;
   }
 
-  /* Voice section */
-  .mic-section { text-align: center; margin: 8px 0 26px; }
-  .mic-button {
-    width: 96px; height: 96px; border-radius: 50%; background: var(--stamp-blue); border: none;
-    color: white; font-size: 32px; cursor: pointer;
-    box-shadow: 0 0 0 6px var(--stamp-blue-soft);
-    transition: transform 0.15s;
+  .sidebar-footer { margin-top: auto; padding: 10px; }
+  .trading-ticket {
+    background: var(--sidebar-soft); border-radius: 8px; padding: 10px 12px;
   }
-  .mic-button:active { transform: scale(0.96); }
-  .mic-button.listening { background: var(--stamp-red); box-shadow: 0 0 0 6px var(--stamp-red-soft); animation: pulse 1.3s infinite; }
-  @keyframes pulse {
-    0% { box-shadow: 0 0 0 6px var(--stamp-red-soft); }
-    70% { box-shadow: 0 0 0 16px transparent; }
-    100% { box-shadow: 0 0 0 6px var(--stamp-red-soft); }
+  .trading-ticket-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #9098B8; margin-bottom: 5px; }
+  .trading-ticket input {
+    width: 100%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 5px; padding: 6px 8px; color: #fff; font-family: 'Space Mono', monospace; font-size: 12px; margin-bottom: 6px;
   }
-  .mic-label {
-    margin-top: 12px; font-family: 'Space Mono', monospace; font-size: 12px;
-    font-style: italic; color: var(--ink-soft);
+  .trading-ticket button {
+    width: 100%; background: var(--stamp-gold); color: #2A1C00; border: none; border-radius: 5px;
+    padding: 7px; font-weight: 700; font-size: 12px; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
   }
 
-  .voice-log { margin-top: 16px; text-align: left; }
-  .bubble {
-    border-radius: 10px; padding: 10px 13px; margin-bottom: 7px; font-size: 13.5px; line-height: 1.4;
-    max-width: 92%;
+  /* Mobile sidebar toggle */
+  .hamburger {
+    display: none; position: fixed; top: 14px; left: 14px; z-index: 60;
+    width: 38px; height: 38px; border-radius: 8px; border: none; background: var(--sidebar); color: white;
+    font-size: 18px; cursor: pointer;
   }
-  .bubble.you { background: #EDEAE0; color: var(--ink-soft); margin-right: auto; }
-  .bubble.buyna { background: var(--stamp-blue-soft); color: var(--ink); margin-left: auto; }
-  .bubble-label {
-    font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--ink-faint); margin-bottom: 3px;
-  }
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 40; }
 
-  /* Receipt cards — the signature element */
-  .receipt-shadow {
-    margin-bottom: 18px;
-    filter: drop-shadow(0 2px 5px rgba(35,33,32,0.10));
+  /* Main */
+  .main { flex: 1; margin-left: 230px; min-height: 100vh; display: flex; flex-direction: column; }
+  .topbar {
+    padding: 20px 28px; border-bottom: 1px solid var(--rule); display: flex;
+    justify-content: space-between; align-items: center; background: var(--paper);
+    position: sticky; top: 0; z-index: 10;
   }
+  .page-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px; }
+  .page-subtitle { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+
+  .page-content { padding: 24px 28px 90px; max-width: 760px; }
+
+  /* Receipt cards */
+  .receipt-shadow { margin-bottom: 16px; filter: drop-shadow(0 2px 5px rgba(35,33,32,0.10)); }
   .receipt-card {
-    background: var(--card);
-    padding: 18px 18px 16px;
+    background: var(--card); padding: 20px 20px 17px;
     clip-path: polygon(
       0% 9px, 3.8% 0%, 7.6% 9px, 11.4% 0%, 15.2% 9px, 19% 0%, 22.8% 9px, 26.6% 0%,
       30.4% 9px, 34.2% 0%, 38% 9px, 41.8% 0%, 45.6% 9px, 49.4% 0%, 53.2% 9px, 57% 0%,
       60.8% 9px, 64.6% 0%, 68.4% 9px, 72.2% 0%, 76% 9px, 79.8% 0%, 83.6% 9px, 87.4% 0%,
       91.2% 9px, 95% 0%, 98.8% 9px, 100% 6px, 100% 100%, 0% 100%
     );
-    padding-top: 22px;
+    padding-top: 23px;
   }
   .receipt-card.warning { background: var(--stamp-red-soft); }
   .receipt-card.highlight { background: var(--stamp-blue-soft); }
+  .receipt-card.gold { background: var(--stamp-gold-soft); }
 
   .card-eyebrow {
     font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--ink-soft); margin-bottom: 10px;
-    display: flex; justify-content: space-between; align-items: center;
+    text-transform: uppercase; color: var(--ink-soft); margin-bottom: 11px;
   }
   .ledger-row {
     display: flex; justify-content: space-between; align-items: baseline;
-    padding: 5px 0; font-size: 14.5px; border-bottom: 1px dotted var(--rule);
+    padding: 6px 0; font-size: 14.5px; border-bottom: 1px dotted var(--rule);
   }
   .ledger-row:last-child { border-bottom: none; }
   .ledger-row .label { color: var(--ink-soft); }
@@ -161,59 +140,180 @@
   .stamp.low { color: var(--stamp-red); }
   .stamp.apprentice { color: var(--stamp-gold); }
 
-  .empty-state {
-    color: var(--ink-faint); font-size: 13px; font-style: italic; padding: 6px 0;
-  }
+  .empty-state { color: var(--ink-faint); font-size: 13px; font-style: italic; padding: 4px 0; }
 
   .progress-track { background: var(--rule); border-radius: 6px; height: 6px; margin-top: 6px; overflow: hidden; }
   .progress-fill { background: var(--stamp-green); height: 100%; }
 
-  .task-card {
-    background: var(--stamp-gold-soft);
+  /* Quick-action forms */
+  .quick-form { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .quick-form .row { display: flex; gap: 8px; }
+  .quick-form input, .quick-form textarea {
+    flex: 1; padding: 9px 11px; border: 1px solid var(--rule); border-radius: 6px;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; background: #fff;
   }
-  .task-card .card-eyebrow { color: var(--stamp-gold); }
+  .quick-form textarea { resize: vertical; min-height: 60px; }
+  .quick-form button {
+    background: var(--stamp-blue); color: white; border: none; border-radius: 6px;
+    padding: 10px 16px; font-weight: 700; font-size: 13px; cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .form-hint { font-size: 12px; color: var(--ink-faint); font-style: italic; }
+  .reply-banner {
+    background: var(--stamp-green-soft); border-radius: 8px; padding: 12px 14px;
+    font-size: 13.5px; margin-bottom: 16px; line-height: 1.4;
+  }
+  .reply-banner.error { background: var(--stamp-red-soft); }
 
-  .footer-line {
-    text-align: center; font-family: 'Space Mono', monospace; font-style: italic;
-    font-size: 11px; color: var(--ink-faint); margin-top: 28px; letter-spacing: 0.05em;
+  /* Mic FAB + voice panel */
+  .mic-fab {
+    position: fixed; bottom: 26px; right: 26px; width: 60px; height: 60px; border-radius: 50%;
+    background: var(--stamp-blue); color: white; border: none; font-size: 26px; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(43,58,103,0.4); z-index: 30;
+  }
+  .mic-fab.listening { background: var(--stamp-red); animation: pulse 1.3s infinite; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(178,59,46,0.5); }
+    70% { box-shadow: 0 0 0 16px rgba(178,59,46,0); }
+    100% { box-shadow: 0 0 0 0 rgba(178,59,46,0); }
+  }
+  .voice-panel {
+    position: fixed; bottom: 0; right: 0; left: 0; background: var(--card);
+    border-top-left-radius: 16px; border-top-right-radius: 16px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.15); max-height: 60vh; overflow-y: auto;
+    transform: translateY(100%); transition: transform 0.25s ease; z-index: 35;
+    padding: 16px 20px 24px;
+  }
+  .voice-panel.open { transform: translateY(0); }
+  .voice-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .voice-panel-title { font-family: 'Space Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); }
+  .voice-panel-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--ink-soft); }
+  .bubble { border-radius: 10px; padding: 10px 13px; margin-bottom: 7px; font-size: 13.5px; line-height: 1.4; max-width: 92%; }
+  .bubble.you { background: #EDEAE0; color: var(--ink-soft); margin-right: auto; }
+  .bubble.buyna { background: var(--stamp-blue-soft); color: var(--ink); margin-left: auto; }
+  .bubble-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 3px; }
+
+  @media (max-width: 800px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .hamburger { display: block; }
+    .overlay.open { display: block; }
+    .topbar { padding-left: 60px; }
+    .page-content { padding: 20px 16px 90px; }
   }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="wordmark">BUYNA</div>
-  <div class="eyebrow">Pidgin-first business ledger</div>
-</div>
+<div class="app">
+  <button class="hamburger" id="hamburgerBtn">&#9776;</button>
+  <div class="overlay" id="overlay"></div>
 
-<div class="container">
-  <div class="ticket">
-    <span class="ticket-label">Trading as</span>
-    <input type="text" id="phoneInput" placeholder="phone number">
-    <button id="usePhoneBtn">Switch</button>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-wordmark">BUYNA</div>
+      <div class="sidebar-tagline">Pidgin-first business ledger</div>
+    </div>
+
+    <div class="nav-group-label">Overview</div>
+    <button class="nav-item active" data-page="home">${'icon_home'}<span>Home</span></button>
+
+    <div class="nav-group-label">Money</div>
+    <button class="nav-item" data-page="sales">${'icon_sales'}<span>Sales</span></button>
+    <button class="nav-item" data-page="expenses">${'icon_expenses'}<span>Expenses &amp; capital</span></button>
+    <button class="nav-item" data-page="kolo">${'icon_kolo'}<span>Kolo savings</span></button>
+    <button class="nav-item" data-page="debts">${'icon_debts'}<span>Debts</span></button>
+
+    <div class="nav-group-label">Business</div>
+    <button class="nav-item" data-page="stock">${'icon_stock'}<span>Stock</span></button>
+    <button class="nav-item" data-page="recipes">${'icon_recipes'}<span>Recipes</span></button>
+    <button class="nav-item" data-page="apprentices">${'icon_apprentices'}<span>Apprentices</span></button>
+    <button class="nav-item" data-page="tools">${'icon_tools'}<span>Business tools</span></button>
+
+    <div class="nav-group-label">Account</div>
+    <button class="nav-item" data-page="notifications">${'icon_bell'}<span>Notifications</span><span class="badge-dot" id="notifBadge" style="display:none">0</span></button>
+
+    <div class="sidebar-footer">
+      <div class="trading-ticket">
+        <div class="trading-ticket-label">Trading as</div>
+        <input type="text" id="phoneInput" placeholder="phone number">
+        <button id="usePhoneBtn">Switch trader</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <div class="page-title" id="pageTitle">Home</div>
+        <div class="page-subtitle" id="pageSubtitle">— end of report style ledger —</div>
+      </div>
+    </header>
+    <div class="page-content" id="pageContent"></div>
+  </main>
+
+  <button class="mic-fab" id="micFab">&#127908;</button>
+  <div class="voice-panel" id="voicePanel">
+    <div class="voice-panel-header">
+      <div class="voice-panel-title">Talk to BUYNA</div>
+      <button class="voice-panel-close" id="voicePanelClose">&times;</button>
+    </div>
+    <div style="text-align:center;margin-bottom:10px">
+      <button class="mic-fab" id="micBtnInner" style="position:static;width:50px;height:50px;font-size:20px"></button>
+      <div class="form-hint" id="micLabel" style="margin-top:6px">tap to talk, or type below</div>
+    </div>
+    <div class="quick-form" style="margin-bottom:12px">
+      <div class="row">
+        <input type="text" id="voiceTextInput" placeholder='e.g. "I sell rice for 5000"'>
+        <button id="voiceTextSend">Send</button>
+      </div>
+    </div>
+    <div id="voiceLog"></div>
   </div>
-
-  <div class="mic-section">
-    <button class="mic-button" id="micBtn">&#127908;</button>
-    <div class="mic-label" id="micLabel">tap to talk</div>
-    <div class="voice-log" id="voiceLog"></div>
-  </div>
-
-  <div id="dashboard"></div>
-
-  <div class="footer-line">— end of report —</div>
 </div>
 
 <script>
-const phoneInput = document.getElementById('phoneInput');
-const usePhoneBtn = document.getElementById('usePhoneBtn');
-const micBtn = document.getElementById('micBtn');
-const micLabel = document.getElementById('micLabel');
-const voiceLog = document.getElementById('voiceLog');
-const dashboardEl = document.getElementById('dashboard');
+// ---------- Icons (inline SVG, consistent stroke style) ----------
+const ICONS = {
+  icon_home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7"/><path d="M5 10v9a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1v-9"/></svg>',
+  icon_sales: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h18l-1.5 10a2 2 0 01-2 1.7H6.5a2 2 0 01-2-1.7L3 7z"/><path d="M8 7V5a4 4 0 018 0v2"/></svg>',
+  icon_expenses: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M17 5H9.5a2.5 2.5 0 000 5h5a2.5 2.5 0 010 5H7"/></svg>',
+  icon_kolo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>',
+  icon_debts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.3 3-5.5 7-5.5s7 2.2 7 5.5"/><path d="M16 4.5a3 3 0 010 7M21 20c0-2.6-1.8-4.6-4.5-5.3"/></svg>',
+  icon_stock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7M3 7l9 4 9-4"/></svg>',
+  icon_recipes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2v6M10 2v6M6 5h4M14 14a6 6 0 1112 0v6H14v-6z"/><path d="M3 2h6l-1 8a2 2 0 01-2 1.7 2 2 0 01-2-1.7L3 2z"/></svg>',
+  icon_apprentices: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="7" r="3.2"/><path d="M3 20c0-3.3 2.7-5.8 6-5.8s6 2.5 6 5.8"/><path d="M17 8.5a2.6 2.6 0 110 5.2M21 20c0-2.7-1.8-4.8-4.5-5.5"/></svg>',
+  icon_tools: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.3 2.3-2.3-.7-.7-2.3z"/></svg>',
+  icon_bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9a6 6 0 1112 0c0 4 1.5 5.5 1.5 6.5H4.5C4.5 14.5 6 13 6 9z"/><path d="M9.5 19a2.5 2.5 0 005 0"/></svg>',
+};
+
+// Replace template placeholders with real icon markup (kept as simple string replace, no templating lib needed)
+document.querySelectorAll('.nav-item').forEach(btn => {
+  Object.keys(ICONS).forEach(key => {
+    btn.innerHTML = btn.innerHTML.replace('${\'' + key + '\'}', ICONS[key]);
+  });
+});
+
+// ---------- State ----------
+let dashboardData = null;
+let currentPage = 'home';
+
+const PAGE_META = {
+  home: { title: 'Home', subtitle: 'Your business at a glance' },
+  sales: { title: 'Sales', subtitle: 'Every sale you have rung up' },
+  expenses: { title: 'Expenses & capital', subtitle: 'Where your money is going' },
+  kolo: { title: 'Kolo savings', subtitle: 'Saving with a purpose' },
+  debts: { title: 'Debts', subtitle: 'Customers who owe you' },
+  stock: { title: 'Stock', subtitle: 'What you have on hand' },
+  recipes: { title: 'Recipes', subtitle: 'Know your real cost per plate' },
+  apprentices: { title: 'Apprentices', subtitle: 'Who can record sales for you' },
+  tools: { title: 'Business tools', subtitle: 'Evaluate an idea before you start' },
+  notifications: { title: 'Notifications', subtitle: 'Everything that happened while you were away' },
+};
 
 function getPhone() { return localStorage.getItem('buyna_phone') || ''; }
-function setPhone(p) { localStorage.setItem('buyna_phone', p); phoneInput.value = p; }
+function setPhone(p) { localStorage.setItem('buyna_phone', p); document.getElementById('phoneInput').value = p; }
 function formatNaira(n) { return '₦' + Number(n || 0).toLocaleString('en-NG'); }
 function timeAgo(iso) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -224,132 +324,37 @@ function timeAgo(iso) {
   if (hrs < 24) return hrs + 'h ago';
   return Math.floor(hrs / 24) + 'd ago';
 }
-
 function card(eyebrow, innerHtml, cls) {
   return `<div class="receipt-shadow"><div class="receipt-card${cls ? ' ' + cls : ''}">
-    <div class="card-eyebrow"><span>${eyebrow}</span></div>
-    ${innerHtml}
+    <div class="card-eyebrow">${eyebrow}</div>${innerHtml}
   </div></div>`;
 }
 
+// ---------- Data loading ----------
 async function loadDashboard() {
   const phone = getPhone();
-  if (!phone) {
-    dashboardEl.innerHTML = '<div class="empty-state">Enter your phone number above to open your ledger.</div>';
-    return;
-  }
+  if (!phone) { dashboardData = null; renderPage(); return; }
   try {
     const res = await fetch('/api/dashboard/' + encodeURIComponent(phone));
-    const d = await res.json();
-    renderDashboard(d);
+    dashboardData = await res.json();
   } catch (err) {
-    dashboardEl.innerHTML = '<div class="empty-state">Could not load your ledger. Check your connection.</div>';
+    dashboardData = null;
   }
+  updateNotifBadge();
+  renderPage();
 }
 
-function renderDashboard(d) {
-  let html = '';
-
-  if (d.todayTask) {
-    html += card(`Day ${d.todayTask.day} of 90 — today's task`,
-      `<div style="font-size:14px;line-height:1.5">${d.todayTask.task}</div>`, 'task-card');
-  }
-
-  if (d.capitalStatus) {
-    const cs = d.capitalStatus;
-    let rows = `
-      <div class="ledger-row"><span class="label">Capital</span><span class="value">${formatNaira(cs.capital)}</span></div>
-      <div class="ledger-row"><span class="label">Spent so far</span><span class="value red">${formatNaira(cs.spent)}</span></div>
-      <div class="ledger-row"><span class="label">Remaining</span><span class="value">${formatNaira(cs.remaining)}</span></div>`;
-    if (cs.daysLeft !== null) {
-      rows += `<div class="ledger-row"><span class="label">${cs.warning ? '⚠ ' : ''}Days left at this rate</span><span class="value${cs.warning ? ' red' : ''}">${cs.daysLeft}</span></div>`;
-    }
-    html += card('Capital status', rows, cs.warning ? 'warning' : '');
-  }
-
-  html += card('Today', `
-    <div class="ledger-row"><span class="label">Sales rung up</span><span class="value">${d.today.count}</span></div>
-    <div class="ledger-row"><span class="label">Total</span><span class="value">${formatNaira(d.today.total)}</span></div>
-    <div class="ledger-row"><span class="label">Profit</span><span class="value green">${formatNaira(d.today.profit)}</span></div>
-    <div class="ledger-row"><span class="label">Expenses</span><span class="value red">${formatNaira(d.today.expenses)}</span></div>
-  `, 'highlight');
-
-  html += card('Last 7 days', `
-    <div class="ledger-row"><span class="label">Total</span><span class="value">${formatNaira(d.week.total)}</span></div>
-    <div class="ledger-row"><span class="label">Profit</span><span class="value green">${formatNaira(d.week.profit)}</span></div>
-    <div class="ledger-row"><span class="label">Expenses</span><span class="value red">${formatNaira(d.week.expenses)}</span></div>
-  `);
-
-  let stockRows = !d.stock.length
-    ? `<div class="empty-state">No stock rung up yet.</div>`
-    : d.stock.map(s => `<div class="ledger-row"><span class="label">${s.item}${s.isLow ? '<span class="stamp low">low</span>' : ''}</span><span class="value">${s.quantity}${s.unitCost > 0 ? ' <span style="color:var(--ink-faint);font-weight:400">@ ' + formatNaira(s.unitCost) + '</span>' : ''}</span></div>`).join('');
-  html += card('Stock on hand', stockRows);
-
-  let debtRows = !d.debts.length
-    ? `<div class="empty-state">Nobody owes you right now.</div>`
-    : d.debts.map(deb => `<div class="ledger-row"><span class="label">${deb.customerName}</span><span class="value red">${formatNaira(deb.amount)}</span></div>`).join('');
-  html += card('Customers who owe you', debtRows);
-
-  let koloRows = !d.kolo.length
-    ? `<div class="empty-state">No Kolo savings yet — say "I save 1000" to start.</div>`
-    : d.kolo.map(k => {
-        const pct = k.targetAmount > 0 ? Math.min(100, Math.round((k.savedAmount / k.targetAmount) * 100)) : null;
-        return `<div style="margin-bottom:8px">
-          <div class="ledger-row" style="border-bottom:none"><span class="label">${k.goalName}</span><span class="value">${formatNaira(k.savedAmount)}${k.targetAmount > 0 ? ' / ' + formatNaira(k.targetAmount) : ''}</span></div>
-          ${pct !== null ? `<div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>` : ''}
-        </div>`;
-      }).join('');
-  html += card('Kolo savings', koloRows);
-
-  if (d.recipes.length) {
-    const rows = d.recipes.map(r => `<div class="ledger-row"><span class="label">${r.name}</span><span class="value">${formatNaira(r.costPerItem)} <span style="color:var(--ink-faint);font-weight:400">/ item</span></span></div>`).join('');
-    html += card('Recipe costs', rows);
-  }
-
-  if (d.apprentices.length) {
-    const rows = d.apprentices.map(a => `<div class="ledger-row"><span class="label">${a.name}<span class="stamp apprentice">apprentice</span></span><span class="value" style="font-size:12px;color:var(--ink-soft)">${a.phone}</span></div>`).join('');
-    html += card('Apprentices', rows);
-  }
-
-  let notifRows = !d.notifications.length
-    ? `<div class="empty-state">No notifications.</div>`
-    : d.notifications.map(n => `<div class="ledger-row"><span class="label" style="font-size:13px">${n.message}</span><span class="value" style="font-size:11px;font-weight:400;color:var(--ink-faint)">${timeAgo(n.createdAt)}</span></div>`).join('');
-  html += card('Notifications', notifRows);
-
-  let salesRows = !d.recentSales.length
-    ? `<div class="empty-state">No sales rung up yet.</div>`
-    : d.recentSales.map(s => `<div class="ledger-row"><span class="label">${s.item}${s.recordedBy === 'apprentice' ? '<span class="stamp apprentice">apprentice</span>' : ''}</span><span class="value">${formatNaira(s.amount)}</span></div>`).join('');
-  html += card('Recent sales', salesRows);
-
-  let expenseRows = !d.recentExpenses.length
-    ? `<div class="empty-state">No expenses rung up yet.</div>`
-    : d.recentExpenses.map(e => `<div class="ledger-row"><span class="label">${e.category}</span><span class="value red">${formatNaira(e.amount)}</span></div>`).join('');
-  html += card('Recent expenses', expenseRows);
-
-  dashboardEl.innerHTML = html;
+function updateNotifBadge() {
+  const badge = document.getElementById('notifBadge');
+  const unread = dashboardData ? dashboardData.notifications.filter(n => !n.isRead).length : 0;
+  badge.style.display = unread > 0 ? 'inline-block' : 'none';
+  badge.textContent = unread;
 }
 
-usePhoneBtn.addEventListener('click', () => {
-  const p = phoneInput.value.trim();
-  if (p) { setPhone(p); loadDashboard(); }
-});
-
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = null;
-let listening = false;
-
-function renderVoiceCard(label, text, cls) {
-  const div = document.createElement('div');
-  div.className = 'bubble ' + (cls || 'you');
-  div.innerHTML = `<div class="bubble-label">${label}</div><div></div>`;
-  div.querySelector('div:last-child').textContent = text;
-  voiceLog.prepend(div);
-}
-
-async function sendToBuyna(text) {
+// ---------- Sending commands to the backend ----------
+async function sendCommand(text, onDone) {
   const phone = getPhone();
-  if (!phone) { renderVoiceCard('Error', 'Enter your phone number first.'); return; }
-  renderVoiceCard('You said', text, 'you');
+  if (!phone) { alert('Enter your phone number first, in the sidebar.'); return; }
   try {
     const res = await fetch('/voice', {
       method: 'POST',
@@ -357,48 +362,349 @@ async function sendToBuyna(text) {
       body: JSON.stringify({ phone, text }),
     });
     const data = await res.json();
-    renderVoiceCard('BUYNA say', data.reply, 'buyna');
-    speak(data.reply);
-    loadDashboard();
+    await loadDashboard();
+    if (onDone) onDone(data.reply, false);
   } catch (err) {
-    renderVoiceCard('Error', 'Network problem — try again.', 'you');
+    if (onDone) onDone('Network problem — try again.', true);
   }
+}
+
+function replyBanner(text, isError) {
+  return `<div class="reply-banner${isError ? ' error' : ''}">${text}</div>`;
+}
+
+// ---------- Page renderers ----------
+function pageHome() {
+  if (!dashboardData) return `<div class="empty-state">Enter your phone number in the sidebar to open your ledger.</div>`;
+  const d = dashboardData;
+  let html = '';
+
+  if (d.todayTask) {
+    html += card(`Day ${d.todayTask.day} of 90 — today's task`, `<div style="font-size:14px;line-height:1.5">${d.todayTask.task}</div>`, 'gold');
+  }
+  html += card('Today', `
+    <div class="ledger-row"><span class="label">Sales rung up</span><span class="value">${d.today.count}</span></div>
+    <div class="ledger-row"><span class="label">Total</span><span class="value">${formatNaira(d.today.total)}</span></div>
+    <div class="ledger-row"><span class="label">Profit</span><span class="value green">${formatNaira(d.today.profit)}</span></div>
+    <div class="ledger-row"><span class="label">Expenses</span><span class="value red">${formatNaira(d.today.expenses)}</span></div>
+  `, 'highlight');
+  html += card('Last 7 days', `
+    <div class="ledger-row"><span class="label">Total</span><span class="value">${formatNaira(d.week.total)}</span></div>
+    <div class="ledger-row"><span class="label">Profit</span><span class="value green">${formatNaira(d.week.profit)}</span></div>
+    <div class="ledger-row"><span class="label">Expenses</span><span class="value red">${formatNaira(d.week.expenses)}</span></div>
+  `);
+  if (d.capitalStatus && d.capitalStatus.warning) {
+    html += card('⚠ Capital warning', `<div class="ledger-row"><span class="label">Days left at this rate</span><span class="value red">${d.capitalStatus.daysLeft}</span></div>`, 'warning');
+  }
+  return html;
+}
+
+function pageSales() {
+  if (!dashboardData) return `<div class="empty-state">Enter your phone number first.</div>`;
+  const d = dashboardData;
+  const formHtml = `<div class="quick-form">
+    <div class="row"><input id="saleItem" placeholder="item (e.g. rice)"><input id="saleQty" placeholder="qty" style="max-width:70px"><input id="salePrice" placeholder="price"></div>
+    <button id="saleSubmit">Record sale</button>
+    <div class="form-hint">Or just tap the mic and say it in Pidgin.</div>
+  </div>`;
+  const rows = !d.recentSales.length ? `<div class="empty-state">No sales rung up yet.</div>`
+    : d.recentSales.map(s => `<div class="ledger-row"><span class="label">${s.item}${s.recordedBy === 'apprentice' ? '<span class="stamp apprentice">apprentice</span>' : ''}</span><span class="value">${formatNaira(s.amount)}</span></div>`).join('');
+  return card('Record a sale', formHtml) + card('Recent sales', rows);
+}
+
+function pageExpenses() {
+  if (!dashboardData) return `<div class="empty-state">Enter your phone number first.</div>`;
+  const d = dashboardData;
+  let html = '';
+  const capForm = `<div class="quick-form">
+    <div class="row"><input id="capitalAmount" placeholder="your capital amount"></div>
+    <button id="capitalSubmit">Set capital</button>
+    <div class="form-hint">BUYNA warns you if you are spending too fast against this.</div>
+  </div>`;
+  html += card('Set your capital', capForm);
+
+  if (d.capitalStatus) {
+    const cs = d.capitalStatus;
+    let rows = `
+      <div class="ledger-row"><span class="label">Capital</span><span class="value">${formatNaira(cs.capital)}</span></div>
+      <div class="ledger-row"><span class="label">Spent so far</span><span class="value red">${formatNaira(cs.spent)}</span></div>
+      <div class="ledger-row"><span class="label">Remaining</span><span class="value">${formatNaira(cs.remaining)}</span></div>`;
+    if (cs.daysLeft !== null) rows += `<div class="ledger-row"><span class="label">${cs.warning ? '⚠ ' : ''}Days left at this rate</span><span class="value${cs.warning ? ' red' : ''}">${cs.daysLeft}</span></div>`;
+    html += card('Capital status', rows, cs.warning ? 'warning' : '');
+  }
+
+  const expForm = `<div class="quick-form">
+    <div class="row"><input id="expenseCategory" placeholder="category (e.g. transport)"><input id="expenseAmount" placeholder="amount"></div>
+    <button id="expenseSubmit">Record expense</button>
+  </div>`;
+  html += card('Record an expense', expForm);
+
+  const rows = !d.recentExpenses.length ? `<div class="empty-state">No expenses rung up yet.</div>`
+    : d.recentExpenses.map(e => `<div class="ledger-row"><span class="label">${e.category}</span><span class="value red">${formatNaira(e.amount)}</span></div>`).join('');
+  html += card('Recent expenses', rows);
+  return html;
+}
+
+function pageKolo() {
+  if (!dashboardData) return `<div class="empty-state">Enter your phone number first.</div>`;
+  const d = dashboardData;
+  const form = `<div class="quick-form">
+    <div class="row"><input id="koloAmount" placeholder="amount"><input id="koloGoal" placeholder="goal name (optional)"></div>
+    <button id="koloSubmit">Save to Kolo</button>
+  </div>`;
+  let rows = !d.kolo.length ? `<div class="empty-state">No Kolo savings yet.</div>`
+    : d.kolo.map(k => {
+        const pct = k.targetAmount > 0 ? Math.min(100, Math.round((k.savedAmount / k.targetAmount) * 100)) : null;
+        return `<div style="margin-bottom:10px">
+          <div class="ledger-row" style="border-bottom:none"><span class="label">${k.goalName}</span><span class="value">${formatNaira(k.savedAmount)}${k.targetAmount > 0 ? ' / ' + formatNaira(k.targetAmount) : ''}</span></div>
+          ${pct !== null ? `<div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>` : ''}
+        </div>`;
+      }).join('');
+  return card('Save to Kolo', form) + card('Your Kolo goals', rows);
+}
+
+function pageDebts() {
+  if (!dashboardData) return `<div class="empty-state">Enter your phone number first.</div>`;
+  const d = dashboardData;
+  const form = `<div class="quick-form">
+    <div class="row"><input id="debtName" placeholder="customer name"><input id="debtAmount" placeholder="amount"></div>
+    <button id="debtSubmit">Record debt</button>
+  </div>`;
+  const rows = !d.debts.length ? `<div class="empty-state">Nobody owes you right now.</div>`
+    : d.debts.map(deb => `<div class="ledger-row"><span class="label">${deb.customerName}</span><span class="value red">${formatNaira(deb.amount)}</span></div>`).join('');
+  return card('Record a debt', form) + card('Who owes you', rows);
+}
+
+function pageStock() {
+  if (!dashboardData) return `<div class="empty-state">Enter your phone number first.</div>`;
+  const d = dashboardData;
+  const form = `<div class="quick-form">
+    <div class="row"><input id="stockItem" placeholder="item"><input id="stockQty" placeholder="qty" style="max-width:70px"><input id="stockCost" placeholder="cost each (optional)"></div>
+    <button id="stockSubmit">Add to stock</button>
+  </div>`;
+  const rows = !d.stock.length ? `<div class="empty-state">No stock rung up yet.</div>`
+    : d.stock.map(s => `<div class="ledger-row"><span class="label">${s.item}${s.isLow ? '<span class="stamp low">low</span>' : ''}</span><span class="value">${s.quantity}${s.unitCost > 0 ? ' <span style="color:var(--ink-faint);font-weight:400">@ ' + formatNaira(s.unitCost) + '</span>' : ''}</span></div>`).join('');
+  return card('Restock', form) + card('Stock on hand', rows);
+}
+
+function pageRecipes() {
+  if (!dashboardData) return `<div class="empty-state">Enter your phone number first.</div>`;
+  const d = dashboardData;
+  const form = `<div class="quick-form">
+    <textarea id="recipeText" placeholder='e.g. "recipe jollof: rice 2000, pepper 500, oil 300 makes 5 plates"'></textarea>
+    <button id="recipeSubmit">Save recipe</button>
+  </div>`;
+  const rows = !d.recipes.length ? `<div class="empty-state">No recipes saved yet.</div>`
+    : d.recipes.map(r => `<div class="ledger-row"><span class="label">${r.name}</span><span class="value">${formatNaira(r.costPerItem)} <span style="color:var(--ink-faint);font-weight:400">/ item</span></span></div>`).join('');
+  return card('Add a recipe', form) + card('Your recipe costs', rows);
+}
+
+function pageApprentices() {
+  if (!dashboardData) return `<div class="empty-state">Enter your phone number first.</div>`;
+  const d = dashboardData;
+  const form = `<div class="quick-form">
+    <div class="row"><input id="appPhone" placeholder="apprentice phone number"><input id="appName" placeholder="name"></div>
+    <button id="appSubmit">Add apprentice</button>
+    <div class="form-hint">They will only be able to record sales — never see totals or delete anything.</div>
+  </div>`;
+  const rows = !d.apprentices.length ? `<div class="empty-state">No apprentices added yet.</div>`
+    : d.apprentices.map(a => `<div class="ledger-row"><span class="label">${a.name}<span class="stamp apprentice">apprentice</span></span><span class="value" style="font-size:12px;color:var(--ink-soft);font-weight:400">${a.phone}</span></div>`).join('');
+  return card('Add an apprentice', form) + card('Your apprentices', rows);
+}
+
+function pageTools() {
+  const form = `<div class="quick-form">
+    <textarea id="toolsQuery" placeholder='e.g. "I want to start a provision store" or "what are the life stages of a business"'></textarea>
+    <button id="toolsSubmit">Ask BUYNA</button>
+  </div>`;
+  return card('Business evaluation', form);
+}
+
+function pageNotifications() {
+  if (!dashboardData) return `<div class="empty-state">Enter your phone number first.</div>`;
+  const d = dashboardData;
+  const rows = !d.notifications.length ? `<div class="empty-state">No notifications.</div>`
+    : d.notifications.map(n => `<div class="ledger-row"><span class="label" style="font-size:13px">${n.message}</span><span class="value" style="font-size:11px;font-weight:400;color:var(--ink-faint)">${timeAgo(n.createdAt)}</span></div>`).join('');
+  return card('Notifications', rows);
+}
+
+const PAGE_RENDERERS = {
+  home: pageHome, sales: pageSales, expenses: pageExpenses, kolo: pageKolo,
+  debts: pageDebts, stock: pageStock, recipes: pageRecipes, apprentices: pageApprentices,
+  tools: pageTools, notifications: pageNotifications,
+};
+
+let lastBanner = '';
+
+function renderPage() {
+  document.getElementById('pageTitle').textContent = PAGE_META[currentPage].title;
+  document.getElementById('pageSubtitle').textContent = PAGE_META[currentPage].subtitle;
+  const html = (lastBanner ? lastBanner : '') + PAGE_RENDERERS[currentPage]();
+  document.getElementById('pageContent').innerHTML = html;
+  lastBanner = '';
+  wireQuickActionForms();
+}
+
+function wireQuickActionForms() {
+  const on = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
+
+  on('saleSubmit', () => {
+    const item = document.getElementById('saleItem').value.trim();
+    const qty = document.getElementById('saleQty').value.trim() || '1';
+    const price = document.getElementById('salePrice').value.trim();
+    if (!item || !price) return;
+    sendCommand(`I sell ${qty} ${item} for ${price}`, finishWithBanner);
+  });
+  on('capitalSubmit', () => {
+    const amt = document.getElementById('capitalAmount').value.trim();
+    if (!amt) return;
+    sendCommand(`my capital is ${amt}`, finishWithBanner);
+  });
+  on('expenseSubmit', () => {
+    const cat = document.getElementById('expenseCategory').value.trim();
+    const amt = document.getElementById('expenseAmount').value.trim();
+    if (!cat || !amt) return;
+    sendCommand(`I spend ${amt} on ${cat}`, finishWithBanner);
+  });
+  on('koloSubmit', () => {
+    const amt = document.getElementById('koloAmount').value.trim();
+    const goal = document.getElementById('koloGoal').value.trim();
+    if (!amt) return;
+    sendCommand(`I save ${amt}${goal ? ' for ' + goal : ''}`, finishWithBanner);
+  });
+  on('debtSubmit', () => {
+    const name = document.getElementById('debtName').value.trim();
+    const amt = document.getElementById('debtAmount').value.trim();
+    if (!name || !amt) return;
+    sendCommand(`${name} owe me ${amt}`, finishWithBanner);
+  });
+  on('stockSubmit', () => {
+    const item = document.getElementById('stockItem').value.trim();
+    const qty = document.getElementById('stockQty').value.trim() || '1';
+    const cost = document.getElementById('stockCost').value.trim();
+    if (!item) return;
+    sendCommand(`I don buy ${qty} ${item}${cost ? ' for ' + cost + ' each' : ''}`, finishWithBanner);
+  });
+  on('recipeSubmit', () => {
+    const text = document.getElementById('recipeText').value.trim();
+    if (!text) return;
+    sendCommand(text, finishWithBanner);
+  });
+  on('appSubmit', () => {
+    const phone = document.getElementById('appPhone').value.trim();
+    const name = document.getElementById('appName').value.trim();
+    if (!phone || !name) return;
+    sendCommand(`add apprentice ${phone} named ${name}`, finishWithBanner);
+  });
+  on('toolsSubmit', () => {
+    const text = document.getElementById('toolsQuery').value.trim();
+    if (!text) return;
+    sendCommand(text, finishWithBanner);
+  });
+}
+
+function finishWithBanner(reply, isError) {
+  lastBanner = replyBanner(reply, isError);
+  renderPage();
+}
+
+// ---------- Navigation ----------
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentPage = btn.dataset.page;
+    closeSidebarOnMobile();
+    renderPage();
+  });
+});
+
+document.getElementById('usePhoneBtn').addEventListener('click', () => {
+  const p = document.getElementById('phoneInput').value.trim();
+  if (p) { setPhone(p); loadDashboard(); }
+});
+
+// ---------- Mobile sidebar ----------
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
+document.getElementById('hamburgerBtn').addEventListener('click', () => {
+  sidebar.classList.add('open'); overlay.classList.add('open');
+});
+overlay.addEventListener('click', closeSidebarOnMobile);
+function closeSidebarOnMobile() { sidebar.classList.remove('open'); overlay.classList.remove('open'); }
+
+// ---------- Voice panel ----------
+const voicePanel = document.getElementById('voicePanel');
+const micFab = document.getElementById('micFab');
+const micBtnInner = document.getElementById('micBtnInner');
+const micLabel = document.getElementById('micLabel');
+const voiceLog = document.getElementById('voiceLog');
+
+micFab.addEventListener('click', () => voicePanel.classList.add('open'));
+document.getElementById('voicePanelClose').addEventListener('click', () => voicePanel.classList.remove('open'));
+
+function renderVoiceBubble(label, text, cls) {
+  const div = document.createElement('div');
+  div.className = 'bubble ' + (cls || 'you');
+  div.innerHTML = `<div class="bubble-label">${label}</div><div></div>`;
+  div.querySelector('div:last-child').textContent = text;
+  voiceLog.prepend(div);
 }
 
 function speak(text) {
   if (!window.speechSynthesis) return;
   const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = 'en-NG';
-  utter.rate = 0.95;
+  utter.lang = 'en-NG'; utter.rate = 0.95;
   window.speechSynthesis.speak(utter);
 }
 
+async function sendVoiceText(text) {
+  renderVoiceBubble('You said', text, 'you');
+  sendCommand(text, (reply) => {
+    renderVoiceBubble('BUYNA say', reply, 'buyna');
+    speak(reply);
+    renderPage();
+  });
+}
+
+document.getElementById('voiceTextSend').addEventListener('click', () => {
+  const input = document.getElementById('voiceTextInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  sendVoiceText(text);
+});
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null, listening = false;
 if (SpeechRecognition) {
   recognition = new SpeechRecognition();
   recognition.lang = 'en-NG';
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
-  recognition.onresult = (event) => sendToBuyna(event.results[0][0].transcript);
+  recognition.onresult = (event) => sendVoiceText(event.results[0][0].transcript);
   recognition.onerror = () => { micLabel.textContent = 'did not catch that — tap to try again'; };
   recognition.onend = () => {
     listening = false;
-    micBtn.classList.remove('listening');
-    if (micLabel.textContent === 'listening...') micLabel.textContent = 'tap to talk';
+    micFab.classList.remove('listening'); micBtnInner.classList.remove('listening');
+    if (micLabel.textContent === 'listening...') micLabel.textContent = 'tap to talk, or type below';
   };
-  micBtn.addEventListener('click', () => {
+  [micBtnInner].forEach(btn => btn.addEventListener('click', () => {
     if (listening) return;
     listening = true;
-    micBtn.classList.add('listening');
+    micFab.classList.add('listening'); micBtnInner.classList.add('listening');
     micLabel.textContent = 'listening...';
     recognition.start();
-  });
+  }));
+  micBtnInner.innerHTML = '&#127908;';
 } else {
-  micBtn.style.display = 'none';
-  micLabel.textContent = 'voice needs Chrome or Edge';
+  micBtnInner.style.display = 'none';
+  micLabel.textContent = 'voice needs Chrome or Edge — type instead';
 }
 
+// ---------- Init ----------
 const savedPhone = getPhone();
-if (savedPhone) phoneInput.value = savedPhone;
+if (savedPhone) document.getElementById('phoneInput').value = savedPhone;
 loadDashboard();
 </script>
 
