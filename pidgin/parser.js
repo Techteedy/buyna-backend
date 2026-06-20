@@ -1,0 +1,115 @@
+// Pidgin intent parser — rule based, no external NLU API needed.
+// Designed to run fully offline on-device (and identically on the backend).
+
+function parseAmount(text) {
+  // Handles "47000", "47,000", "47k", "2.5k"
+  // Takes the LAST matching number in the sentence — in Pidgin sale phrasing
+  // ("I sell 5 bag rice for 47000") the price comes after the quantity, not before.
+  const kMatches = [...text.matchAll(/(\d+(?:\.\d+)?)\s*k\b/gi)];
+  if (kMatches.length) return parseFloat(kMatches[kMatches.length - 1][1]) * 1000;
+
+  const numMatches = [...text.matchAll(/\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?/g)];
+  if (!numMatches.length) return null;
+  return parseFloat(numMatches[numMatches.length - 1][0].replace(/,/g, ''));
+}
+
+function parseQuantity(text) {
+  const unitMatch = text.match(/\b(\d+)\s*(?:bag|bags|piece|pieces|carton|cartons|paint|paints|tin|tins|plate|plates)\b/i);
+  if (unitMatch) return parseInt(unitMatch[1], 10);
+  const sellQtyMatch = text.match(/\bsell\s+(\d+)\b/i);
+  if (sellQtyMatch) return parseInt(sellQtyMatch[1], 10);
+  return 1;
+}
+
+function parseItem(text) {
+  let t = text.replace(/\bfor\s+[\d,.]+k?\b.*$/i, '').replace(/\bat\s+[\d,.]+k?\b.*$/i, '');
+  const sellMatch = t.match(/\b(?:sell|sold|sale|don sell)\b\s+([\s\S]+)$/i);
+  if (!sellMatch) return 'goods';
+  let rest = sellMatch[1].trim();
+  rest = rest.replace(/^\d+\s*/, '');
+  rest = rest.replace(/^(bag|bags|piece|pieces|carton|cartons|paint|paints|tin|tins|plate|plates)\s+/i, '');
+  rest = rest.replace(/^of\s+/i, '').trim();
+  return rest || 'goods';
+}
+
+const INTENT_RULES = [
+  {
+    intent: 'DAILY_SUMMARY',
+    test: t => /\b(how much.*today|today summary|wetin i make today|profit today)\b/i.test(t),
+  },
+  {
+    intent: 'KOLO_BALANCE',
+    test: t => /\b(kolo|savings)\b/i.test(t) && /\b(check|balance|how much)\b/i.test(t),
+  },
+  {
+    intent: 'DEBT_QUERY',
+    test: t => /\b(who owe|owing|debt|wettin dem owe)\b/i.test(t),
+  },
+  {
+    intent: 'STOCK_QUERY',
+    test: t => /\b(stock|how many.*left|wettin remain)\b/i.test(t),
+  },
+  {
+    intent: 'RECORD_SALE',
+    test: t => /\b(sell|sold|sale|don sell)\b/i.test(t),
+  },
+  {
+    intent: 'RECORD_EXPENSE',
+    test: t => /\b(spend|spent|bought fuel|buy fuel|transport|paid for)\b/i.test(t),
+  },
+  {
+    intent: 'KOLO_DEPOSIT',
+    test: t => /\b(save|saved|kolo)\b/i.test(t) && !/\bcheck\b/i.test(t),
+  },
+  {
+    intent: 'DEBT_RECORD',
+    test: t => /\b(owe me|on credit|him go pay later)\b/i.test(t),
+  },
+  {
+    intent: 'RESTOCK',
+    test: t => /\b(restock|buy more|add stock|i don buy)\b/i.test(t),
+  },
+];
+
+function parsePidgin(rawText) {
+  const text = rawText.trim();
+  const rule = INTENT_RULES.find(r => r.test(text));
+  const intent = rule ? rule.intent : 'UNKNOWN';
+
+  const result = { intent, raw: text };
+
+  switch (intent) {
+    case 'RECORD_SALE':
+      result.item = parseItem(text);
+      result.quantity = parseQuantity(text);
+      result.amount = parseAmount(text);
+      break;
+    case 'RECORD_EXPENSE':
+      result.amount = parseAmount(text);
+      result.category = /transport|fuel/i.test(text) ? 'transport'
+        : /food|chop/i.test(text) ? 'food'
+        : /airtime|recharge/i.test(text) ? 'airtime'
+        : 'other';
+      break;
+    case 'KOLO_DEPOSIT':
+      result.amount = parseAmount(text);
+      break;
+    case 'DEBT_RECORD': {
+      result.amount = parseAmount(text);
+      const nameMatch = text.match(/\b([A-Z][a-z]+)\b(?=.*owe)/);
+      result.customerName = nameMatch ? nameMatch[1] : 'Customer';
+      break;
+    }
+    case 'RESTOCK':
+      result.item = parseItem(text);
+      result.quantity = parseQuantity(text);
+      result.unitCost = parseAmount(text);
+      break;
+    default:
+      break;
+  }
+
+  return result;
+}
+
+module.exports = { parsePidgin, parseAmount, parseQuantity, parseItem };

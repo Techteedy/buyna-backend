@@ -1,0 +1,16 @@
+{
+  "name": "buyna-backend",
+  "version": "0.1.0",
+  "description": "BUYNA MVP backend — voice, USSD and Pidgin intent parsing",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
