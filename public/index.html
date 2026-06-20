@@ -10,118 +10,252 @@
     margin: 0;
     font-family: -apple-system, system-ui, sans-serif;
     background: #f5f6f8;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 24px 16px 60px;
+    color: #222;
   }
-  .title { font-size: 30px; font-weight: 800; color: #1a6bc4; margin: 8px 0 0; }
-  .subtitle { font-size: 14px; color: #666; margin: 4px 0 28px; text-align: center; }
-  .mic-button {
-    width: 140px; height: 140px;
-    border-radius: 50%;
+  .header {
     background: #1a6bc4;
-    border: none;
     color: white;
-    font-size: 48px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 14px rgba(26,107,196,0.35);
-    transition: transform 0.15s, background 0.2s;
+    padding: 18px 16px;
+    text-align: center;
   }
-  .mic-button:active { transform: scale(0.95); }
+  .header .title { font-size: 24px; font-weight: 800; }
+  .header .subtitle { font-size: 12px; opacity: 0.9; margin-top: 2px; }
+  .container { max-width: 480px; margin: 0 auto; padding: 16px; padding-bottom: 60px; }
+
+  .phone-bar {
+    display: flex; gap: 8px; margin-bottom: 16px;
+  }
+  .phone-bar input {
+    flex: 1; padding: 10px 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 14px;
+  }
+  .phone-bar button {
+    background: #1a6bc4; color: white; border: none; border-radius: 10px; padding: 10px 16px; font-size: 14px; cursor: pointer;
+  }
+
+  .mic-section { text-align: center; margin: 20px 0 28px; }
+  .mic-button {
+    width: 110px; height: 110px; border-radius: 50%; background: #1a6bc4; border: none;
+    color: white; font-size: 36px; cursor: pointer; box-shadow: 0 4px 14px rgba(26,107,196,0.35);
+  }
   .mic-button.listening { background: #d85a30; animation: pulse 1.2s infinite; }
   @keyframes pulse {
     0% { box-shadow: 0 0 0 0 rgba(216,90,48,0.5); }
     70% { box-shadow: 0 0 0 22px rgba(216,90,48,0); }
     100% { box-shadow: 0 0 0 0 rgba(216,90,48,0); }
   }
-  .mic-label { margin-top: 14px; font-size: 14px; color: #888; font-weight: 600; }
+  .mic-label { margin-top: 10px; font-size: 13px; color: #888; font-weight: 600; }
+  .voice-log { margin-top: 14px; }
+  .voice-card {
+    background: white; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; font-size: 14px;
+  }
+  .voice-card.reply { background: #e6f1fb; }
+  .voice-label { font-size: 10px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+
   .card {
-    width: 100%; max-width: 380px;
-    background: white;
-    border-radius: 14px;
-    padding: 16px 18px;
-    margin-top: 18px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    background: white; border-radius: 14px; padding: 16px; margin-bottom: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
   }
-  .card-label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; font-weight: 700; }
-  .card-text { font-size: 16px; color: #222; line-height: 1.4; }
-  .card.reply { background: #e6f1fb; }
-  .card.error { background: #fcebeb; }
-  .examples {
-    width: 100%; max-width: 380px;
-    margin-top: 28px;
+  .card-title { font-size: 13px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 10px; }
+  .stat-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 15px; }
+  .stat-row .label { color: #777; }
+  .stat-row .value { font-weight: 700; }
+  .stat-row .value.profit { color: #1d9e75; }
+
+  .list-item {
+    display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px;
   }
-  .examples-title { font-size: 12px; color: #999; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
-  .example-chip {
-    display: inline-block;
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 20px;
-    padding: 8px 14px;
-    font-size: 13px;
-    color: #444;
-    margin: 0 6px 8px 0;
-    cursor: pointer;
+  .list-item:last-child { border-bottom: none; }
+  .badge {
+    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-left: 6px;
   }
-  .example-chip:hover { background: #f0f0f0; }
-  .unsupported {
-    background: #faeeda; color: #633806; border-radius: 10px; padding: 14px;
-    font-size: 14px; max-width: 380px; text-align: center;
-  }
+  .badge.low { background: #fcebeb; color: #a32d2d; }
+  .badge.apprentice { background: #faeeda; color: #854f0b; }
+  .empty-state { color: #999; font-size: 13px; text-align: center; padding: 10px 0; }
+
+  .progress-bar-bg { background: #eee; border-radius: 8px; height: 8px; margin-top: 4px; overflow: hidden; }
+  .progress-bar-fill { background: #1d9e75; height: 100%; }
 </style>
 </head>
 <body>
 
-<div class="title">BUYNA</div>
-<div class="subtitle">Tap the mic and talk your sale — for Pidgin</div>
+<div class="header">
+  <div class="title">BUYNA</div>
+  <div class="subtitle">Your business, for Pidgin</div>
+</div>
 
-<button class="mic-button" id="micBtn">&#127908;</button>
-<div class="mic-label" id="micLabel">Tap to talk</div>
+<div class="container">
+  <div class="phone-bar">
+    <input type="text" id="phoneInput" placeholder="Enter your phone number">
+    <button id="usePhoneBtn">Use</button>
+  </div>
 
-<div id="results"></div>
+  <div class="mic-section">
+    <button class="mic-button" id="micBtn">&#127908;</button>
+    <div class="mic-label" id="micLabel">Tap to talk</div>
+    <div class="voice-log" id="voiceLog"></div>
+  </div>
 
-<div class="examples">
-  <div class="examples-title">Or try one of these</div>
-  <span class="example-chip" data-text="I sell 5 bag rice for 47000">I sell 5 bag rice for 47000</span>
-  <span class="example-chip" data-text="I save 2000">I save 2000</span>
-  <span class="example-chip" data-text="how much I sell today">how much I sell today</span>
-  <span class="example-chip" data-text="I spend 500 on transport">I spend 500 on transport</span>
+  <div id="dashboard"></div>
 </div>
 
 <script>
-const MY_PHONE = localStorage.getItem('buyna_phone') || '2348012345678';
+const phoneInput = document.getElementById('phoneInput');
+const usePhoneBtn = document.getElementById('usePhoneBtn');
 const micBtn = document.getElementById('micBtn');
 const micLabel = document.getElementById('micLabel');
-const results = document.getElementById('results');
+const voiceLog = document.getElementById('voiceLog');
+const dashboardEl = document.getElementById('dashboard');
+
+function getPhone() {
+  return localStorage.getItem('buyna_phone') || '';
+}
+function setPhone(p) {
+  localStorage.setItem('buyna_phone', p);
+  phoneInput.value = p;
+}
+
+function formatNaira(n) {
+  return '₦' + Number(n || 0).toLocaleString('en-NG');
+}
+function timeAgo(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  return Math.floor(hrs / 24) + 'd ago';
+}
+
+async function loadDashboard() {
+  const phone = getPhone();
+  if (!phone) {
+    dashboardEl.innerHTML = '<div class="empty-state">Enter your phone number above to see your dashboard.</div>';
+    return;
+  }
+  try {
+    const res = await fetch('/api/dashboard/' + encodeURIComponent(phone));
+    const d = await res.json();
+    renderDashboard(d);
+  } catch (err) {
+    dashboardEl.innerHTML = '<div class="empty-state">Could not load dashboard. Check your connection.</div>';
+  }
+}
+
+function renderDashboard(d) {
+  let html = '';
+
+  html += `<div class="card">
+    <div class="card-title">Today</div>
+    <div class="stat-row"><span class="label">Sales recorded</span><span class="value">${d.today.count}</span></div>
+    <div class="stat-row"><span class="label">Total</span><span class="value">${formatNaira(d.today.total)}</span></div>
+    <div class="stat-row"><span class="label">Profit</span><span class="value profit">${formatNaira(d.today.profit)}</span></div>
+  </div>`;
+
+  html += `<div class="card">
+    <div class="card-title">Last 7 days</div>
+    <div class="stat-row"><span class="label">Total</span><span class="value">${formatNaira(d.week.total)}</span></div>
+    <div class="stat-row"><span class="label">Profit</span><span class="value profit">${formatNaira(d.week.profit)}</span></div>
+  </div>`;
+
+  html += `<div class="card"><div class="card-title">Stock</div>`;
+  if (!d.stock.length) {
+    html += `<div class="empty-state">No stock recorded yet.</div>`;
+  } else {
+    d.stock.forEach(s => {
+      html += `<div class="list-item"><span>${s.item}${s.isLow ? '<span class="badge low">low</span>' : ''}</span><span>${s.quantity}</span></div>`;
+    });
+  }
+  html += `</div>`;
+
+  html += `<div class="card"><div class="card-title">Customers who owe you</div>`;
+  if (!d.debts.length) {
+    html += `<div class="empty-state">Nobody owes you right now.</div>`;
+  } else {
+    d.debts.forEach(deb => {
+      html += `<div class="list-item"><span>${deb.customerName}</span><span>${formatNaira(deb.amount)}</span></div>`;
+    });
+  }
+  html += `</div>`;
+
+  html += `<div class="card"><div class="card-title">Kolo savings</div>`;
+  if (!d.kolo.length) {
+    html += `<div class="empty-state">No Kolo savings yet — say "I save 1000" to start.</div>`;
+  } else {
+    d.kolo.forEach(k => {
+      const pct = k.targetAmount > 0 ? Math.min(100, Math.round((k.savedAmount / k.targetAmount) * 100)) : null;
+      html += `<div style="margin-bottom:10px">
+        <div class="list-item" style="border-bottom:none"><span>${k.goalName}</span><span>${formatNaira(k.savedAmount)}${k.targetAmount > 0 ? ' / ' + formatNaira(k.targetAmount) : ''}</span></div>
+        ${pct !== null ? `<div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>` : ''}
+      </div>`;
+    });
+  }
+  html += `</div>`;
+
+  if (d.apprentices.length) {
+    html += `<div class="card"><div class="card-title">Apprentices</div>`;
+    d.apprentices.forEach(a => {
+      html += `<div class="list-item"><span>${a.name}</span><span>${a.phone}</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `<div class="card"><div class="card-title">Notifications</div>`;
+  if (!d.notifications.length) {
+    html += `<div class="empty-state">No notifications.</div>`;
+  } else {
+    d.notifications.forEach(n => {
+      html += `<div class="list-item"><span>${n.message}</span><span style="color:#999;font-size:12px">${timeAgo(n.createdAt)}</span></div>`;
+    });
+  }
+  html += `</div>`;
+
+  html += `<div class="card"><div class="card-title">Recent sales</div>`;
+  if (!d.recentSales.length) {
+    html += `<div class="empty-state">No sales recorded yet.</div>`;
+  } else {
+    d.recentSales.forEach(s => {
+      html += `<div class="list-item"><span>${s.item}${s.recordedBy === 'apprentice' ? '<span class="badge apprentice">apprentice</span>' : ''}</span><span>${formatNaira(s.amount)}</span></div>`;
+    });
+  }
+  html += `</div>`;
+
+  dashboardEl.innerHTML = html;
+}
+
+usePhoneBtn.addEventListener('click', () => {
+  const p = phoneInput.value.trim();
+  if (p) { setPhone(p); loadDashboard(); }
+});
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
 let listening = false;
 
-function renderCard(label, text, cls) {
+function renderVoiceCard(label, text, cls) {
   const div = document.createElement('div');
-  div.className = 'card' + (cls ? ' ' + cls : '');
-  div.innerHTML = `<div class="card-label">${label}</div><div class="card-text"></div>`;
-  div.querySelector('.card-text').textContent = text;
-  results.prepend(div);
+  div.className = 'voice-card' + (cls ? ' ' + cls : '');
+  div.innerHTML = `<div class="voice-label">${label}</div><div></div>`;
+  div.querySelector('div:last-child').textContent = text;
+  voiceLog.prepend(div);
 }
 
 async function sendToBuyna(text) {
-  renderCard('You said', text);
+  const phone = getPhone();
+  if (!phone) { renderVoiceCard('Error', 'Enter your phone number first.'); return; }
+  renderVoiceCard('You said', text);
   try {
     const res = await fetch('/voice', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: MY_PHONE, text }),
+      body: JSON.stringify({ phone, text }),
     });
     const data = await res.json();
-    renderCard('BUYNA say', data.reply, 'reply');
+    renderVoiceCard('BUYNA say', data.reply, 'reply');
     speak(data.reply);
+    loadDashboard();
   } catch (err) {
-    renderCard('Error', 'Network problem — check your connection and try again.', 'error');
+    renderVoiceCard('Error', 'Network problem — try again.');
   }
 }
 
@@ -138,20 +272,13 @@ if (SpeechRecognition) {
   recognition.lang = 'en-NG';
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
-
-  recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
-    sendToBuyna(transcript);
-  };
-  recognition.onerror = () => {
-    micLabel.textContent = 'Did not catch that — tap to try again';
-  };
+  recognition.onresult = (event) => sendToBuyna(event.results[0][0].transcript);
+  recognition.onerror = () => { micLabel.textContent = 'Did not catch that — tap to try again'; };
   recognition.onend = () => {
     listening = false;
     micBtn.classList.remove('listening');
     if (micLabel.textContent === 'Listening...') micLabel.textContent = 'Tap to talk';
   };
-
   micBtn.addEventListener('click', () => {
     if (listening) return;
     listening = true;
@@ -161,16 +288,12 @@ if (SpeechRecognition) {
   });
 } else {
   micBtn.style.display = 'none';
-  micLabel.innerHTML = '';
-  const warn = document.createElement('div');
-  warn.className = 'unsupported';
-  warn.textContent = 'Voice input needs Chrome or Edge on this device. Try the example phrases below instead.';
-  micLabel.appendChild(warn);
+  micLabel.textContent = 'Voice needs Chrome or Edge';
 }
 
-document.querySelectorAll('.example-chip').forEach(chip => {
-  chip.addEventListener('click', () => sendToBuyna(chip.dataset.text));
-});
+const savedPhone = getPhone();
+if (savedPhone) phoneInput.value = savedPhone;
+loadDashboard();
 </script>
 
 </body>
