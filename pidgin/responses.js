@@ -52,11 +52,46 @@ const responses = {
     `Today, you sell ${salesCount} time, total na ${formatNaira(todayTotal)}, ` +
     `profit na ${formatNaira(todayProfit)}. You dey go!`,
 
-  overspendingWarning: ({ daysLeft }) =>
-    `Oga at this rate, your money go finish in ${daysLeft} days. Slow down small.`,
-
   unknown: () =>
     `I no understand wetin you talk. Try say "I sell rice for 5000" or "I save 1000".`,
+
+  costPriceSet: ({ item, amount }) =>
+    `OK, I don set cost price for ${item} to ${formatNaira(amount)}. I go warn you if you wan sell below that.`,
+
+  belowCostWarning: ({ item, costPrice }) =>
+    `No do am! That price go put you for loss for ${item}. Your cost price na ${formatNaira(costPrice)}.`,
+
+  capitalSet: ({ amount }) =>
+    `OK, I don record your capital as ${formatNaira(amount)}. I go warn you if you dey spend too fast.`,
+
+  overspendingWarning: ({ daysLeft }) =>
+    `Oga at this rate, your money go finish in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}. Slow down small.`,
+
+  restockPrediction: ({ item, daysLeft, restockByDate }) => {
+    if (daysLeft === null) return `I no get enough sales history for ${item} yet to predict restock time.`;
+    return `Based on how you dey sell, your ${item} go finish in about ${daysLeft} days. Restock by ${restockByDate}.`;
+  },
+
+  recipeAdded: ({ recipeName, totalCost, yieldCount, costPerItem }) =>
+    `OK, I don save ${recipeName}. Total cost na ${formatNaira(totalCost)} for ${yieldCount} plates — that's ${formatNaira(costPerItem)} per plate. Make sure you sell above that.`,
+
+  recipeCostQuery: ({ recipeName, costPerItem, totalCost, yieldCount }) =>
+    `${recipeName} cost ${formatNaira(costPerItem)} per plate (${formatNaira(totalCost)} total for ${yieldCount} plates).`,
+
+  recipeNotFound: ({ recipeName }) =>
+    `I no get recipe for ${recipeName} yet. Tell me the ingredients first.`,
+
+  reconcileBalanced: ({ total }) =>
+    `Everything balance well. Cash, POS and transfer add up to ${formatNaira(total)} — that match your sales today.`,
+
+  reconcileMismatch: ({ counted, expected, difference }) =>
+    `Oga, something no add up — you counted ${formatNaira(counted)} but today sales show ${formatNaira(expected)}. ${formatNaira(difference)} dey missing. Check again.`,
+
+  taskForDay: ({ day, task }) =>
+    `Day ${day}: ${task}`,
+
+  onboardingComplete: () =>
+    `Oga you don complete your first 90 days! Continue the good work — your habits don set well well.`,
 };
 
 module.exports = responses;

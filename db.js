@@ -21,6 +21,7 @@ async function initSchema() {
       phone TEXT UNIQUE NOT NULL,
       name TEXT,
       role TEXT DEFAULT 'boss',
+      capital_amount NUMERIC DEFAULT 0,
       created_at TIMESTAMPTZ DEFAULT now()
     );
 
@@ -84,6 +85,23 @@ async function initSchema() {
       stage TEXT,
       data TEXT,
       updated_at TIMESTAMPTZ DEFAULT now()
+    );
+
+    CREATE TABLE IF NOT EXISTS recipes (
+      id SERIAL PRIMARY KEY,
+      user_phone TEXT NOT NULL,
+      name TEXT NOT NULL,
+      yield_count NUMERIC DEFAULT 1,
+      total_cost NUMERIC DEFAULT 0,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      UNIQUE(user_phone, name)
+    );
+
+    CREATE TABLE IF NOT EXISTS recipe_ingredients (
+      id SERIAL PRIMARY KEY,
+      recipe_id INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      cost NUMERIC DEFAULT 0
     );
   `);
 }
