@@ -38,7 +38,12 @@ function parseItem(text) {
   return rest || 'goods';
 }
 
-// "set cost price rice 4000" / "my cost price for rice na 4000" -> rice
+// "I don buy 50 garri for 200 each" -> 200. Returns null if no price stated,
+// so a bare "I don buy 50 garri" doesn't wrongly reuse the quantity as cost.
+function parseRestockCost(text) {
+  const m = text.match(/\b(?:for|at)\s+([\d,.]+k?)\s*(?:each|per\s+\w+)?\b/i);
+  return m ? parseAmount(m[0]) : null;
+}
 function parseCostItem(text) {
   let t = text.replace(/\b(set\s+)?cost\s+price\s+(for\s+)?/i, '');
   t = t.replace(/\bna\b/i, '').replace(/\d.*$/, '').trim();
@@ -150,7 +155,7 @@ function parsePidgin(rawText) {
     case 'RESTOCK':
       result.item = parseItem(text);
       result.quantity = parseQuantity(text);
-      result.unitCost = parseAmount(text);
+      result.unitCost = parseRestockCost(text);
       break;
     case 'SET_COST_PRICE':
       result.item = parseCostItem(text);
