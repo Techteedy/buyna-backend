@@ -4,9 +4,7 @@ const { Pool } = require('pg');
 // database to this service. Locally, set it in a .env file or your shell.
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL && process.env.DATABASE_URL.includes('render.com')
-    ? { rejectUnauthorized: false }
-    : false,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
 });
 
 async function query(text, params = []) {
@@ -30,6 +28,8 @@ async function initSchema() {
     ALTER TABLE users ADD COLUMN IF NOT EXISTS capital_amount NUMERIC DEFAULT 0;
     ALTER TABLE users ADD COLUMN IF NOT EXISTS pin_hash TEXT;
     ALTER TABLE users ADD COLUMN IF NOT EXISTS pin_salt TEXT;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS recovery_word_hash TEXT;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS recovery_word_salt TEXT;
 
     CREATE TABLE IF NOT EXISTS stock (
       id SERIAL PRIMARY KEY,

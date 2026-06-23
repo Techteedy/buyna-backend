@@ -21,43 +21,11 @@ async function todayTotals(phone) {
   return { total: Number(row.total), profit: Number(row.profit), cnt: Number(row.cnt) };
 }
 
-async function isApprentice(phone) {
-  const rows = await query(`SELECT * FROM apprentices WHERE apprentice_phone = $1 AND active = true`, [phone]);
-  return rows[0] || null;
-}
-
-async function addApprentice(bossPhone, parsed) {
-  const { apprenticePhone, apprenticeName } = parsed;
-  if (!apprenticePhone) return { text: responses.apprenticeAddFailed() };
-  await query(`
-    INSERT INTO apprentices (boss_phone, apprentice_phone, apprentice_name)
-    VALUES ($1, $2, $3)
-    ON CONFLICT (boss_phone, apprentice_phone) DO UPDATE SET apprentice_name = $3, active = true
-  `, [bossPhone, apprenticePhone, apprenticeName]);
-  return { text: responses.apprenticeAdded({ name: apprenticeName, phone: apprenticePhone }) };
-}
-
-async function notifyBoss(bossPhone, message) {
-  await query(`INSERT INTO notifications (boss_phone, message) VALUES ($1, $2)`, [bossPhone, message]);
-}
-
-async function notificationsQuery(phone) {
-  const rows = await query(`SELECT * FROM notifications WHERE boss_phone = $1 AND is_read = false ORDER BY created_at DESC LIMIT 10`, [phone]);
-  if (!rows.length) return { text: responses.notificationsEmpty() };
-  await query(`UPDATE notifications SET is_read = true WHERE boss_phone = $1 AND is_read = false`, [phone]);
-  const list = rows.map(r => r.message).join(' ');
-  return { text: responses.notificationsList({ list }) };
-}
-
 async function recordSale(phone, parsed, channel) {
   const { item, quantity, amount } = parsed;
-  if (!amount) return { text: 'I no catch the amount. Try again, talk the price clearly.' };
+  if (!amount) return { text: 'I no catch the amount. Try again, talk the price clear.' };
 
-  const apprenticeRow = await isApprentice(phone);
-  const recordedBy = apprenticeRow ? 'apprentice' : 'boss';
-  const ownerPhone = apprenticeRow ? apprenticeRow.boss_phone : phone;
-
-  const stockRows = await query(`SELECT * FROM stock WHERE user_phone = $1 AND item = $2`, [ownerPhone, item]);
+  const stockRows = await query(`SELECT * FROM stock WHERE user_phone = $1 AND item = $2`, [phone, item]);
   const stockRow = stockRows[0];
   const unitCost = stockRow ? Number(stockRow.unit_cost) : 0;
   const costBasis = unitCost * quantity;
@@ -69,9 +37,9 @@ async function recordSale(phone, parsed, channel) {
   }
 
   await query(`
-    INSERT INTO sales (user_phone, item, quantity, amount, cost_basis, profit, channel, recorded_by)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-  `, [ownerPhone, item, quantity, amount, costBasis, profit, channel, recordedBy]);
+    INSERT INTO sales (user_phone, item, quantity, amount, cost_basis, profit, channel)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+  `, [phone, item, quantity, amount, costBasis, profit, channel]);
 
   let lowStockNote = '';
   if (stockRow) {
@@ -82,13 +50,7 @@ async function recordSale(phone, parsed, channel) {
     }
   }
 
-  if (apprenticeRow) {
-    await notifyBoss(ownerPhone, responses.apprenticeSaleAlert({ apprenticeName: apprenticeRow.apprentice_name, item, amount }));
-    // Apprentice never sees totals or profit — just a plain confirmation
-    return { text: `OK, sale recorded — ${item} for ${amount.toLocaleString('en-NG')}. Oga go see am.`, data: { item, quantity, amount } };
-  }
-
-  const { total, profit: todayProfit } = await todayTotals(ownerPhone);
+  const { total, profit: todayProfit } = await todayTotals(phone);
   const text = responses.saleRecorded({ item, quantity, amount, profit, todayTotal: total, todayProfit }) + belowCostNote + lowStockNote;
   return { text, data: { item, quantity, amount, profit } };
 }
@@ -124,7 +86,7 @@ async function koloBalance(phone) {
   if (!rows.length) return { text: responses.koloBalance({ savedAmount: 0 }) };
   if (rows.length === 1) return { text: responses.koloBalance({ savedAmount: Number(rows[0].saved_amount) }) };
   const list = rows.map(r => `${r.goal_name}: ${Number(r.saved_amount).toLocaleString('en-NG')}`).join(', ');
-  return { text: `Your Kolo goals — ${list}.` };
+  return { text: `Your Kolo goals dem be — ${list}.` };
 }
 
 async function debtQuery(phone) {
@@ -232,37 +194,6 @@ async function restockPrediction(phone, parsed) {
   return { text: responses.restockPrediction({ item, daysLeft, restockByDate }) };
 }
 
-// Recipe and Batch Cost Calculator
-async function recipeAdd(phone, parsed) {
-  const { recipeName, yieldCount, ingredients } = parsed;
-  const totalCost = ingredients.reduce((s, i) => s + i.cost, 0);
-
-  await query(`
-    INSERT INTO recipes (user_phone, name, yield_count, total_cost)
-    VALUES ($1, $2, $3, $4)
-    ON CONFLICT (user_phone, name) DO UPDATE SET yield_count = $3, total_cost = $4, created_at = now()
-  `, [phone, recipeName, yieldCount, totalCost]);
-
-  const recipeRows = await query(`SELECT id FROM recipes WHERE user_phone = $1 AND name = $2`, [phone, recipeName]);
-  const recipeId = recipeRows[0].id;
-  await query(`DELETE FROM recipe_ingredients WHERE recipe_id = $1`, [recipeId]);
-  for (const ing of ingredients) {
-    await query(`INSERT INTO recipe_ingredients (recipe_id, name, cost) VALUES ($1, $2, $3)`, [recipeId, ing.name, ing.cost]);
-  }
-
-  const costPerItem = yieldCount > 0 ? totalCost / yieldCount : totalCost;
-  return { text: responses.recipeAdded({ recipeName, totalCost, yieldCount, costPerItem }) };
-}
-
-async function recipeCostQuery(phone, parsed) {
-  const { recipeName } = parsed;
-  const rows = await query(`SELECT * FROM recipes WHERE user_phone = $1 AND name ILIKE $2`, [phone, `%${recipeName}%`]);
-  const recipe = rows[0];
-  if (!recipe) return { text: responses.recipeNotFound({ recipeName }) };
-  const costPerItem = Number(recipe.yield_count) > 0 ? Number(recipe.total_cost) / Number(recipe.yield_count) : Number(recipe.total_cost);
-  return { text: responses.recipeCostQuery({ recipeName: recipe.name, costPerItem, totalCost: Number(recipe.total_cost), yieldCount: Number(recipe.yield_count) }) };
-}
-
 // End of Market Day Reconciliation
 async function reconcile(phone, parsed) {
   const { cash, pos, transfer } = parsed;
@@ -298,13 +229,6 @@ async function lifeStagesQuery() {
   return { text: responses.lifeStages({ stages: LIFE_STAGES }) };
 }
 
-async function removeApprentice(bossPhone, parsed) {
-  const { apprenticePhone } = parsed;
-  if (!apprenticePhone) return { text: 'I need the apprentice phone number to remove them.' };
-  await query(`UPDATE apprentices SET active = false WHERE boss_phone = $1 AND apprentice_phone = $2`, [bossPhone, apprenticePhone]);
-  return { text: `OK, I don remove that apprentice. Dem no fit record sales again.` };
-}
-
 async function setKoloTarget(phone, parsed) {
   const { amount, goalName } = parsed;
   if (!amount) return { text: 'How much be the target? Talk the amount.' };
@@ -321,11 +245,6 @@ async function setKoloTarget(phone, parsed) {
 async function handleIntent(phone, parsed, channel = 'voice') {
   await ensureUser(phone);
 
-  const apprenticeRow = await isApprentice(phone);
-  if (apprenticeRow && parsed.intent !== 'RECORD_SALE') {
-    return { text: responses.apprenticeRestricted() };
-  }
-
   let result;
   switch (parsed.intent) {
     case 'RECORD_SALE': result = await recordSale(phone, parsed, channel); break;
@@ -340,16 +259,11 @@ async function handleIntent(phone, parsed, channel = 'voice') {
     case 'SET_COST_PRICE': result = await setCostPrice(phone, parsed); break;
     case 'SET_CAPITAL': result = await setCapital(phone, parsed); break;
     case 'RESTOCK_PREDICTION_QUERY': result = await restockPrediction(phone, parsed); break;
-    case 'RECIPE_ADD': result = await recipeAdd(phone, parsed); break;
-    case 'RECIPE_COST_QUERY': result = await recipeCostQuery(phone, parsed); break;
     case 'RECONCILE': result = await reconcile(phone, parsed); break;
     case 'TASK_QUERY': result = await taskQuery(phone); break;
     case 'BUSINESS_EVALUATE': result = await evaluateBusiness(phone, parsed); break;
     case 'LIFE_STAGES_QUERY': result = await lifeStagesQuery(); break;
-    case 'ADD_APPRENTICE': result = await addApprentice(phone, parsed); break;
-    case 'REMOVE_APPRENTICE': result = await removeApprentice(phone, parsed); break;
     case 'SET_KOLO_TARGET': result = await setKoloTarget(phone, parsed); break;
-    case 'NOTIFICATIONS_QUERY': result = await notificationsQuery(phone); break;
     default: result = { text: responses.unknown() };
   }
 

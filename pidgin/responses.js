@@ -7,124 +7,97 @@ function formatNaira(n) {
 const responses = {
   saleRecorded: ({ item, quantity, amount, profit, todayTotal, todayProfit }) => {
     const itemPart = quantity > 1 ? `${quantity} ${item}` : item;
-    return `Oga you don sell ${itemPart} for ${formatNaira(amount)}. ` +
-      `Today total na ${formatNaira(todayTotal)}, profit na ${formatNaira(todayProfit)}.`;
+    return `You don sell ${itemPart}, na ${formatNaira(amount)} o! ` +
+      `Today total na ${formatNaira(todayTotal)}, profit na ${formatNaira(todayProfit)}. You dey try!`;
   },
 
   expenseRecorded: ({ amount, category }) =>
-    `OK, I don record ${formatNaira(amount)} wey you spend on ${category}.`,
+    `OK, I don write am down — ${formatNaira(amount)} wey you spend for ${category}.`,
 
   koloDeposit: ({ amount, savedAmount, targetAmount, goalName }) => {
     if (targetAmount > 0) {
       const remaining = Math.max(targetAmount - savedAmount, 0);
-      return `Sharp! You don save ${formatNaira(amount)} for ${goalName}. ` +
-        `You don reach ${formatNaira(savedAmount)} out of ${formatNaira(targetAmount)}. ` +
-        `${formatNaira(remaining)} remain.`;
+      return `Sharp sharp! You don save ${formatNaira(amount)} for ${goalName}. ` +
+        `Na ${formatNaira(savedAmount)} you don reach, out of ${formatNaira(targetAmount)}. ` +
+        `${formatNaira(remaining)} remain — you fit do am!`;
     }
-    return `Sharp! You don save ${formatNaira(amount)}. Your Kolo balance na ${formatNaira(savedAmount)} now.`;
+    return `Sharp sharp! You don save ${formatNaira(amount)}. Your Kolo balance na ${formatNaira(savedAmount)} now. Continue like that.`;
   },
 
   koloBalance: ({ savedAmount }) =>
-    `Your Kolo balance na ${formatNaira(savedAmount)}. Continue to save small small.`,
+    `Your Kolo balance na ${formatNaira(savedAmount)} as we dey talk. Save small small, e go add up.`,
 
   debtQuery: ({ debts, total }) => {
-    if (!debts.length) return `Nobody owe you for now. Your book clean.`;
-    const list = debts.map(d => `${d.customer_name} owe ${formatNaira(d.amount)}`).join(', ');
-    return `People wey owe you: ${list}. Total na ${formatNaira(total)}.`;
+    if (!debts.length) return `Nobody owe you for now o — your book clean.`;
+    const list = debts.map(d => `${d.customer_name} dey owe ${formatNaira(d.amount)}`).join(', ');
+    return `People wey owe you na — ${list}. Altogether, dem owe you ${formatNaira(total)}.`;
   },
 
   debtRecorded: ({ customerName, amount }) =>
-    `OK, I don record say ${customerName} owe you ${formatNaira(amount)}. I go remind dem.`,
+    `I don write am — ${customerName} dey owe you ${formatNaira(amount)}. No worry, I go help you remember.`,
 
   stockQuery: ({ stock }) => {
-    if (!stock.length) return `You never add any stock yet.`;
-    const list = stock.map(s => `${s.item}: ${s.quantity} remain`).join(', ');
-    return `Your stock be like this — ${list}.`;
+    if (!stock.length) return `You never add any goods come your stock yet.`;
+    const list = stock.map(s => `${s.item} — ${s.quantity} remain`).join(', ');
+    return `Na this dey your stock — ${list}.`;
   },
 
   lowStockAlert: ({ item, quantity }) =>
-    `Oga, ${item} dey finish — only ${quantity} remain. Time to restock.`,
+    `Oya o, ${item} wan finish — na only ${quantity} remain. Time to restock before e finish for hand.`,
 
   restockRecorded: ({ item, quantity }) =>
-    `OK, I don add ${quantity} ${item} to your stock.`,
+    `Correct. I don add ${quantity} ${item} come your stock.`,
 
   dailySummary: ({ todayTotal, todayProfit, salesCount }) =>
-    `Today, you sell ${salesCount} time, total na ${formatNaira(todayTotal)}, ` +
-    `profit na ${formatNaira(todayProfit)}. You dey go!`,
+    `Today, you sell ${salesCount} ${salesCount === 1 ? 'time' : 'times'}. Total na ${formatNaira(todayTotal)}, ` +
+    `profit na ${formatNaira(todayProfit)}. Na correct work, continue like that!`,
 
   unknown: () =>
-    `I no understand wetin you talk. Try say "I sell rice for 5000" or "I save 1000".`,
+    `I no sabi wetin you talk o. Try talk am like "I sell rice for 5000" or "I save 1000".`,
 
   costPriceSet: ({ item, amount }) =>
-    `OK, I don set cost price for ${item} to ${formatNaira(amount)}. I go warn you if you wan sell below that.`,
+    `Noted. Cost price for ${item} na ${formatNaira(amount)} now. If you wan sell am below that, I go talk to you.`,
 
   belowCostWarning: ({ item, costPrice }) =>
-    `No do am! That price go put you for loss for ${item}. Your cost price na ${formatNaira(costPrice)}.`,
+    `Abeg no do that one! That price go put you for loss for ${item}. Your cost price na ${formatNaira(costPrice)}.`,
 
   capitalSet: ({ amount }) =>
-    `OK, I don record your capital as ${formatNaira(amount)}. I go warn you if you dey spend too fast.`,
+    `OK, your capital na ${formatNaira(amount)} now. If you dey spend too fast, I go give you signal.`,
 
   overspendingWarning: ({ daysLeft }) =>
-    `Oga at this rate, your money go finish in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}. Slow down small.`,
+    `Oya, watch how you dey spend — at this rate, your money fit finish in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}. Slow down small.`,
 
   restockPrediction: ({ item, daysLeft, restockByDate }) => {
-    if (daysLeft === null) return `I no get enough sales history for ${item} yet to predict restock time.`;
-    return `Based on how you dey sell, your ${item} go finish in about ${daysLeft} days. Restock by ${restockByDate}.`;
+    if (daysLeft === null) return `I never see enough history for ${item} to fit calculate when you go restock.`;
+    return `Based on how you dey sell, ${item} go finish in like ${daysLeft} days. Restock am before ${restockByDate}.`;
   },
 
-  recipeAdded: ({ recipeName, totalCost, yieldCount, costPerItem }) =>
-    `OK, I don save ${recipeName}. Total cost na ${formatNaira(totalCost)} for ${yieldCount} plates — that's ${formatNaira(costPerItem)} per plate. Make sure you sell above that.`,
-
-  recipeCostQuery: ({ recipeName, costPerItem, totalCost, yieldCount }) =>
-    `${recipeName} cost ${formatNaira(costPerItem)} per plate (${formatNaira(totalCost)} total for ${yieldCount} plates).`,
-
-  recipeNotFound: ({ recipeName }) =>
-    `I no get recipe for ${recipeName} yet. Tell me the ingredients first.`,
-
   reconcileBalanced: ({ total }) =>
-    `Everything balance well. Cash, POS and transfer add up to ${formatNaira(total)} — that match your sales today.`,
+    `Everything balance correct! Cash, POS and transfer add up to ${formatNaira(total)} — e match wetin you sell today. Una try!`,
 
   reconcileMismatch: ({ counted, expected, difference }) =>
-    `Oga, something no add up — you counted ${formatNaira(counted)} but today sales show ${formatNaira(expected)}. ${formatNaira(difference)} dey missing. Check again.`,
+    `Hmm, something no balance o — you count ${formatNaira(counted)} but your sales show ${formatNaira(expected)}. ${formatNaira(difference)} dey miss. Check well well.`,
 
   taskForDay: ({ day, task }) =>
     `Day ${day}: ${task}`,
 
   onboardingComplete: () =>
-    `Oga you don complete your first 90 days! Continue the good work — your habits don set well well.`,
+    `Oya, you don finish your first 90 days! You don build correct habit now — no relax, continue the good work.`,
 
   businessEvaluation: ({ name, minCost, maxCost, successRate, firstBuy, successFactors }) => {
     const factorsList = successFactors.map((f, i) => `${i + 1}) ${f}`).join(' ');
-    return `${name} — here's wetin you need to know. Startup cost dey range from ${formatNaira(minCost)} to ${formatNaira(maxCost)}, depending on your scale. ` +
-      `Rough success rate for businesses like this na about ${successRate} percent, based on common patterns. ` +
-      `Buy this first: ${firstBuy}. Key things wey go determine if you go succeed: ${factorsList}`;
+    return `${name} — na wetin you need to know. Money to start am dey range from ${formatNaira(minCost)} to ${formatNaira(maxCost)}, depending on how big you wan start. ` +
+      `Roughly, about ${successRate} percent of people wey try this kind business dey succeed. ` +
+      `First thing to buy — ${firstBuy}. Wetin go determine if you go succeed: ${factorsList}`;
   },
 
   businessNotFound: () =>
-    `I no get specific data for that business yet, but here's general advice: start small with what you have, ` +
-    `track every sale and expense from day one, and grow only after you don prove the idea work for small scale first.`,
+    `I never get correct data for that one yet, but make I tell you small advice: start small with wetin you get, ` +
+    `write down every sale and every expense from day one, and only grow am after you don prove say the idea sweet for small scale first.`,
 
   lifeStages: ({ stages }) =>
-    `Every business pass through 5 stages: ${stages.map((s, i) => `${i + 1}) ${s}`).join(', ')}. ` +
-    `Tell me which stage you dey, and I fit guide you better.`,
-
-  apprenticeAdded: ({ name, phone }) =>
-    `OK, I don add ${name} as your apprentice. ${name} fit only record sales — dem no fit see your totals or delete anything. I go alert you every time dem record a sale.`,
-
-  apprenticeAddFailed: () =>
-    `I need the apprentice phone number to add them. Try say "add apprentice 08033334444 named Chinedu".`,
-
-  apprenticeSaleAlert: ({ apprenticeName, item, amount }) =>
-    `${apprenticeName} just record a sale — ${item} for ${formatNaira(amount)}.`,
-
-  apprenticeRestricted: () =>
-    `Apprentice fit only record sales for now. Ask oga for anything else.`,
-
-  notificationsEmpty: () =>
-    `No new notification. Everything quiet for now.`,
-
-  notificationsList: ({ list }) =>
-    `Here's wetin happen — ${list}`,
+    `Every business dey pass through 5 stage — ${stages.map((s, i) => `${i + 1}) ${s}`).join(', ')}. ` +
+    `Tell me which one you dey, make I guide you well.`,
 };
 
 module.exports = responses;

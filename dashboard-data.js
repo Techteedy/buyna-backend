@@ -60,16 +60,6 @@ async function getDashboard(phone) {
     FROM notifications WHERE boss_phone = $1 ORDER BY created_at DESC LIMIT 10
   `, [phone]);
 
-  const apprentices = await query(`
-    SELECT apprentice_name, apprentice_phone, active
-    FROM apprentices WHERE boss_phone = $1 AND active = true
-  `, [phone]);
-
-  const recipes = await query(`
-    SELECT name, yield_count, total_cost
-    FROM recipes WHERE user_phone = $1 ORDER BY name
-  `, [phone]);
-
   // Overspending fuel-gauge — same math as the voice warning, surfaced visually here
   let capitalStatus = null;
   const capital = user ? Number(user.capital_amount) : 0;
@@ -149,16 +139,6 @@ async function getDashboard(phone) {
       message: n.message,
       isRead: n.is_read,
       createdAt: n.created_at,
-    })),
-    apprentices: apprentices.map(a => ({
-      name: a.apprentice_name,
-      phone: a.apprentice_phone,
-    })),
-    recipes: recipes.map(r => ({
-      name: r.name,
-      yieldCount: Number(r.yield_count),
-      totalCost: Number(r.total_cost),
-      costPerItem: Number(r.yield_count) > 0 ? Number(r.total_cost) / Number(r.yield_count) : Number(r.total_cost),
     })),
   };
 }
