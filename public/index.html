@@ -228,7 +228,7 @@
     <button class="nav-item" data-page="kolo">${'icon_kolo'}<span>Kolo</span></button>
     <button class="nav-item" data-page="debts">${'icon_debts'}<span>Debt</span></button>
     <button class="nav-item" data-page="stock">${'icon_stock'}<span>Stock</span></button>
-    <button class="nav-item" data-page="tools">${'icon_tools'}<span>Check Idea</span></button>
+    <button class="nav-item" data-page="tools">${'icon_tools'}<span>Business Tools</span></button>
     <button class="nav-item" data-page="notifications">${'icon_bell'}<span>Alert</span><span class="badge-dot" id="notifBadge" style="display:none">0</span></button>
     <button class="nav-item" data-page="settings">${'icon_settings'}<span>Setting</span></button>
 
@@ -305,7 +305,7 @@ const PAGE_META = {
   kolo: { title: 'Kolo', subtitle: 'Save am with one purpose' },
   debts: { title: 'Debt', subtitle: 'People wey owe you' },
   stock: { title: 'Stock', subtitle: 'Wetin you get for hand' },
-  tools: { title: 'Check Idea', subtitle: 'Sabi am before you start' },
+  tools: { title: 'Business Tools', subtitle: 'Sabi am before you start' },
   notifications: { title: 'Alert', subtitle: 'Wetin happen while you no dey' },
   settings: { title: 'Setting', subtitle: 'Protect your account well well' },
 };
@@ -538,7 +538,7 @@ function pageTools() {
     <textarea id="toolsQuery" placeholder='e.g. "I want to start a provision store" or "wetin be the 5 stages of business"'></textarea>
     <button id="toolsSubmit">Ask BUYNA</button>
   </div>`;
-  return card('Check your idea before you start', form);
+  return card('Check your business idea before you start', form);
 }
 
 function pageNotifications() {
