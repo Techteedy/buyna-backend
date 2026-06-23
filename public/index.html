@@ -223,14 +223,14 @@
     </div>
 
     <button class="nav-item active" data-page="home">${'icon_home'}<span>Home</span></button>
-    <button class="nav-item" data-page="sales">${'icon_sales'}<span>Sale</span></button>
-    <button class="nav-item" data-page="expenses">${'icon_expenses'}<span>Spend &amp; Capital</span></button>
-    <button class="nav-item" data-page="kolo">${'icon_kolo'}<span>Kolo</span></button>
-    <button class="nav-item" data-page="debts">${'icon_debts'}<span>Debt</span></button>
-    <button class="nav-item" data-page="stock">${'icon_stock'}<span>Stock</span></button>
+    <button class="nav-item" data-page="sales">${'icon_sales'}<span>Sales</span></button>
+    <button class="nav-item" data-page="expenses">${'icon_expenses'}<span>Expenses and Capital</span></button>
+    <button class="nav-item" data-page="kolo">${'icon_kolo'}<span>Kolo Savings</span></button>
+    <button class="nav-item" data-page="debts">${'icon_debts'}<span>Debts</span></button>
+    <button class="nav-item" data-page="stock">${'icon_stock'}<span>Stocks</span></button>
     <button class="nav-item" data-page="tools">${'icon_tools'}<span>Business Tools</span></button>
-    <button class="nav-item" data-page="notifications">${'icon_bell'}<span>Alert</span><span class="badge-dot" id="notifBadge" style="display:none">0</span></button>
-    <button class="nav-item" data-page="settings">${'icon_settings'}<span>Setting</span></button>
+    <button class="nav-item" data-page="notifications">${'icon_bell'}<span>Notifications</span><span class="badge-dot" id="notifBadge" style="display:none">0</span></button>
+    <button class="nav-item" data-page="settings">${'icon_settings'}<span>Settings</span></button>
 
     <div class="sidebar-footer">
       <div class="trading-ticket">
@@ -300,14 +300,14 @@ let currentPage = 'home';
 
 const PAGE_META = {
   home: { title: 'Home', subtitle: 'Wetin dey happen for your shop' },
-  sales: { title: 'Sale', subtitle: 'Everything wey you don sell' },
-  expenses: { title: 'Spend &amp; Capital', subtitle: 'Where your money dey go' },
-  kolo: { title: 'Kolo', subtitle: 'Save am with one purpose' },
-  debts: { title: 'Debt', subtitle: 'People wey owe you' },
-  stock: { title: 'Stock', subtitle: 'Wetin you get for hand' },
+  sales: { title: 'Sales', subtitle: 'Everything wey you don sell' },
+  expenses: { title: 'Expenses and Capital', subtitle: 'Where your money dey go' },
+  kolo: { title: 'Kolo Savings', subtitle: 'Save am with one purpose' },
+  debts: { title: 'Debts', subtitle: 'People wey owe you' },
+  stock: { title: 'Stocks', subtitle: 'Wetin you get for hand' },
   tools: { title: 'Business Tools', subtitle: 'Sabi am before you start' },
-  notifications: { title: 'Alert', subtitle: 'Wetin happen while you no dey' },
-  settings: { title: 'Setting', subtitle: 'Protect your account well well' },
+  notifications: { title: 'Notifications', subtitle: 'Wetin happen while you no dey' },
+  settings: { title: 'Settings', subtitle: 'Protect your account well well' },
 };
 
 function getPhone() { return localStorage.getItem('buyna_phone') || ''; }
@@ -401,7 +401,15 @@ function replyBanner(text, isError) {
 
 function phoneBanner() {
   const phone = getPhone();
-  if (phone) return '';
+  if (phone) {
+    return `<div class="phone-banner">
+      <div class="label">You dey trade as</div>
+      <div class="row">
+        <input type="text" id="phoneInputHome" value="${phone}">
+        <button id="usePhoneBtnHome">Change</button>
+      </div>
+    </div>`;
+  }
   return `<div class="phone-banner">
     <div class="label">Enter your phone number make I show your ledger</div>
     <div class="row">
